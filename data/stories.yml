@@ -1,0 +1,149 @@
+version: "2.0"
+stories:
+- story: story_clean
+  steps:
+  - intent: EXTERNAL_person_detected
+  - slot_was_set:
+    - shopping: einkaufen
+  - action: action_offer_clean
+  - checkpoint: clean_confirmation
+  
+- story: confirm clean_confirmation
+  steps:
+  - checkpoint: clean_confirmation
+  - intent: affirm
+  - action: action_clean_react
+  - action: action_restart
+  
+- story: deny clean_confirmation
+  steps:
+  - checkpoint: clean_confirmation
+  - intent: deny
+  - action: action_clean_react
+  - action: action_restart
+
+- story: missing_location_story
+  steps:
+  - intent: EXTERNAL_missing_from
+  - action: action_ask_for_info
+  - intent: location
+  - slot_was_set:
+      - gegenstand: Chips
+  - action: action_bring_after_from
+  - action: action_restart
+
+- story: missing_object_story
+  steps:
+  - intent: EXTERNAL_missing_from
+  - action: action_ask_for_info
+  - intent: bring
+  - action: action_bring
+
+- story: offer alternative
+  steps:
+  - intent: EXTERNAL_alternative
+  - action: action_offer_alternative
+  - checkpoint: ask_confirmation
+
+- story: confirm alternative
+  steps:
+  - checkpoint: ask_confirmation
+  - intent: affirm
+  - action: action_alternative_react
+  - action: action_restart
+
+- story: deny alternative
+  steps:
+  - checkpoint: ask_confirmation
+  - intent: deny
+  - action: action_alternative_react
+  - action: action_restart
+  
+- story: start interaction
+  steps:
+  - intent: EXTERNAL_person_detected
+  - slot_was_set:
+    - shopping: zuhause
+  - action: utter_greet
+  - intent: greet
+  - action: utter_person_detected
+  - action: utter_answ_greet
+  - intent: more_info
+  - slot_was_set:
+    - info_type: Greifarm
+  - action: action_more_info
+  - checkpoint: info_confirmation
+
+- story: more_info deny
+  steps:
+  - action: utter_answ_greet
+  - intent: deny
+  - action: utter_ask_level
+  - intent: setProactiveLevel
+  - action: action_set_level
+
+- story: affim info
+  steps:
+  - checkpoint: info_confirmation
+  - intent: affirm
+  - action: action_more_info
+  - action: utter_ask_level
+  - intent: setProactiveLevel
+  - action: action_set_level
+  - intent: inform_shopping
+    entities:
+    - shopping: einkaufen
+  - slot_was_set:
+    - shopping: einkaufen
+  - action: utter_ack_shopping
+  - action: utter_request_memorize
+  - intent: affirm
+  - action: utter_memorize
+  - action: action_memorize
+  
+- story: deny info
+  steps:
+  - checkpoint: info_confirmation
+  - intent: deny
+  - action: utter_ask_level
+  - intent: setProactiveLevel
+  - action: action_set_level
+  - intent: inform_shopping
+    entities:
+    - shopping: einkaufen
+  - slot_was_set:
+    - shopping: einkaufen
+  - action: utter_ack_shopping
+  - action: utter_request_memorize
+  - intent: affirm
+  - action: utter_memorize
+  - action: action_memorize
+  
+- story: memorize_clean
+  steps:
+  - action: utter_request_memorize
+  - intent: affirm
+  - action: utter_memorize
+  - action: action_memorize
+  - intent: EXTERNAL_person_detected
+  - slot_was_set:
+    - shopping: einkaufen
+  - action: action_offer_clean
+  - checkpoint: clean_confirmation
+  
+- story: anomaly detected
+  steps:
+  - intent: EXTERNAL_anomaly_detected
+  - slot_was_set:
+    - anomaly: bleiche
+  - action: action_anomaly_detected
+  - intent: moveto
+  - action: action_anomaly_react
+
+- story: anomaly detected deny
+  steps:
+  - intent: EXTERNAL_anomaly_detected
+  - slot_was_set:
+    - anomaly: bleiche
+  - action: action_anomaly_detected
+  - intent: deny

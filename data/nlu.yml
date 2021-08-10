@@ -1,0 +1,353 @@
+version: "2.0"
+nlu:
+- intent: greet
+  examples: |
+    - Mein Name ist [Juste](name)
+    - Ich heiße [Alex](name)
+    - Ich bin [Bernd](name)
+    - Nenn mich [Klaus](name)
+    - [Anna](name)
+    - [Ankita](name)
+    - [Arthur](name)
+    - [Artur](name)
+    - [Ben](name)
+    - [Thomas](name)
+    - [Eva](name)
+    - [Nina](name)
+    - [Peter](name)
+    - [Mark](name)
+    - [Joseph](name)
+    - [Hans](name)
+    - [Max](name)
+    - [Wolfgang](name)
+    - [Nicolas](name)
+    - [Nico](name)
+    - [Matthias](name)
+    - [Franz](name)
+    - [Günter](name)
+    - [Tibor](name)
+    - [Daniel](name)
+- intent: appConnect
+  examples: |
+    - Verbindungsaufbau
+    - Stelle Verbindung her.
+    - Verbindung aufbauen.
+- intent: memorize
+  examples: |
+    - Merke dir meine Wohnung.
+    - Mach dir ein Bild von meiner Wohnung.
+    - Schau dich um.
+    - Schau dir die Wohnung an.
+- intent: bye
+  examples: |
+    - Tschüss
+    - Auf Wiedersehen
+    - Adieu
+    - Adios
+    - Lebewohl
+    - Bis bald
+    - Wiederschauen
+    - Servus
+    - Mach's gut
+    - Bye
+    - Bye bye
+    - Wiedersehen
+    - Schönen Tag noch
+    - Einen schönen Tag noch
+    - Ciao
+    - bb
+    - Bis zum nächsten mal
+- intent: bring
+  examples: |
+    - Bring mir eine [Banane](gegenstand).
+    - bring mir einen [Apfel](gegenstand)
+    - bring mir das [Kissen](gegenstand).
+    - bring mir bitte ein [Messer](gegenstand)
+    - Kannst du mir bitte eine [Birne](gegenstand) bringen
+    - kannst du mir einen [Stuhl](gegenstand) bringen.
+    - Gib mir das [Telefon](gegenstand)
+    - reiche mir das [Brot](gegenstand)
+    - Ich hätte gerne [Kekse](gegenstand).
+    - hol mir den [Teller](gegenstand).
+    - Hol mir bitte das [Handy](gegenstand)
+    - hol mir mal bitte die [Maus](gegenstand)
+    - Hol mir mal den [Korb](gegenstand)
+    - hol mir ein [Bier](gegenstand) aus dem [Keller](place)
+    - bring mir ein [Bier](gegenstand) aus dem [Keller](place)
+    - hol mir einen [Apfel](gegenstand) von dem [Esstisch](place)
+    - Hol mir einen [Apfel](gegenstand)
+    - hol mir eine [Cola](gegenstand) von dem [Sofa](place)
+    - hol mir die [Chips](gegenstand) aus dem [Kühlschrank](place)
+    - bring mir eine [Banane](gegenstand) aus der [Küche](place)
+    - bring mir einen [Apfel](gegenstand) aus dem [Schrank](place)
+    - kannst du mir bitte eine [Birne](gegenstand), aus dem [Regal](place), bringen
+    - kannst du mir einen [Stuhl](gegenstand) bringen. Er ist in dem [Flur](place)
+    - gib mir das [Telefon](gegenstand) von dem [Esstisch](place)
+    - reiche mir das [Brot](gegenstand) auf dem [Esstisch](place)
+    - hol mir mal ein [Bier](gegenstand) aus dem [Keller](place)
+    - In dem [Schrank](place) ist ein [Apfel](gegenstand). Kannst du mir den bitte holen?
+    - In dem [Schrank](place) ist ein [Apfel](gegenstand). Kannst du mir den bitte bringen
+    - in dem [Schrank](place) ist ein [Apfel](gegenstand). Hol den mir
+    - Bring mir, aus dem [Schrank](place), eine [Apfel](gegenstand)
+    - bring mir eine [banane](gegenstand)
+    - Bring mir einen [apfel](gegenstand)
+    - bring mir eine [cola]{"entity": "gegenstand", "value": "Cola"}
+    - bring mir eine [Cola](gegenstand)
+    - Bring mir eine [Cola](gegenstand)
+    - kannst du mir eine [cola]{"entity": "gegenstand", "value": "Cola"} bringen
+    - bring mir bitte eine [cola]{"entity": "gegenstand", "value": "Cola"}
+- intent: clean
+  examples: |
+    - bitte räume den [Küchentisch](furniture) auf
+    - räume den Einkauf auf.
+    - Ich habe eingekauft, verstaue die Gegenstände.
+    - platziere die Gegenstände auf dem [Küchentisch](furniture)
+    - kümmer dich um die Gegenstände auf dem [Küchentisch](furniture)
+    - verräume den Einkauf auf dem [küchentisch](furniture).
+- intent: commandLFD
+  examples: |
+    - ich zeige dir nun über zwei Demonstrationen, wie du [Müsli](keyword) [zubereiten](task) kannst
+    - ich zeige dir nun über mehrere Demonstrationen, wie du das [Müsli](keyword) [zubereiten]    (task) kannst
+    - ich zeige dir nun über LFD, wie du [Müsli](keyword) [zubereiten](task) kannst
+    - ich zeige dir nun über zwei Demonstrationen, wie du die [Schüssel](keyword) [greifen](task) kannst
+    - ich zeige dir nun über mehrere Demonstrationen, wie du die [Schüssel](keyword) [greifen](task) kannst
+    - ich zeige dir nun über LFD, wie du eine [Schüssel](keyword) [greifen](task) kannst
+    - ich zeige dir nun wie du [Müsli](keyword) [zubereiten](task) kannst.
+    - ich zeige dir nun über mehrere Demos, wie du eine [Schüssel](keyword) [greifen](task) kannst
+- intent: startLFD
+  examples: |
+    - ich fange jetzt an
+    - die erste Demonstration beginnt jetzt
+    - die zweite Demonstration beginnt jetzt
+    - die demo beginnt jetzt
+    - die demo beginnt
+- intent: stopLFD
+  examples: |
+    - demonstration abgeschlossen
+    - ich bin fertig mit der Demonstration
+    - die demonstration is beendet
+    - ich habe die demonstration beendet
+    - die demo ist jetzt beendet
+    - die demo ist beendet
+- intent: deleteLFD
+  examples: |
+    - demonstration löschen
+    - lösche die letzte Demonstration
+    - diese Demonstration nicht speichern
+    - diese Demonstration nicht übernehmen
+    - lösche die letzte demonstration
+- intent: saveLFD
+  examples: |
+    - demonstration speichern
+    - speicher die letzte Demonstration
+    - diese Demonstration speichern
+    - diese Demonstration übernehmen
+    - übernehme diese Demonstration
+    - speichere die letzte demonstration
+- intent: reproduceLFD
+  examples: |
+    - reproduziere [Müsli](keyword) [zubereiten](task).
+    - bereite mir [Müsli](keyword) zu.
+    - führe [Müsli](keyword) [zubereiten](task) aus.
+    - führe [müsli](keyword) [zubereiten](task) aus.
+- intent: moveto
+  examples: |
+    - Die [Bleiche](gegenstand) gehört in den [Mülleimer](place).
+    - in der [Spüle](place)
+    - Auf dem [Tisch](place)
+    - [Couchtisch](place)
+    - [Esstisch](place)
+    - in der [Küche](place)
+    - gehe in das [Büro](place)
+    - fahre in das [Arbeitszimmer](place)
+    - beweg dich in die [Küche](place)
+    - [Mülleimer](place)
+    - [Dachboden](place)
+    - in der [küche](place)
+    - zum [Mülleimer](place)
+    - zur [Spüle](place)
+    - [Spüle](place)
+    - Kannst du die [Bleiche](gegenstand) in den [Mülleimer](place) werfen?
+    - Stelle die [Bleiche](gegenstand) in die [Spüle](place).
+- intent: take
+  examples: |
+    - nimm den [Apfel](gegenstand)
+    - nimm die [Birne](gegenstand)
+    - nimm das [Brot](gegenstand)
+    - nimm den [Apfel](gegenstand) in die Hand
+    - nimm die [Birne](gegenstand) in die Hand
+    - nimm das [Brot](gegenstand) in die Hand
+    - nimm den [Apfel](gegenstand) auf
+    - nimm die [Birne](gegenstand) auf
+    - nimm das [Brot](gegenstand) auf
+    - nimm [Apfel](gegenstand)
+    - greife nach dem [Brot](gegenstand)
+    - greife das [Brot](gegenstand)
+    - greife [Apfel](gegenstand)
+    - ergreife [Apfel](gegenstand)
+    - ergreife den [Apfel](gegenstand)
+    - fasse das [Brot](gegenstand)
+    - fasse [Apfel](gegenstand)
+    - erfasse das [Brot](gegenstand)
+    - erfasse [Birne](gegenstand)
+    - nehme [Teller](gegenstand)
+    - entnimm den [Teller](gegenstand)
+    - nehme den [Teller](gegenstand)
+    - heb mal den [Apfel](gegenstand)
+    - heb mal das [Bier](gegenstand) hoch
+    - hebe das [Bier](gegenstand)
+- intent: affirm
+  examples: |
+    - ja
+    - jap
+    - ich will
+    - ich will das
+    - genau das
+    - gerne
+    - oh ja
+    - passt
+    - bitte
+    - unbedingt
+- intent: deny
+  examples: |
+    - Nein
+    - Nee
+    - nicht
+    - negativ
+    - Auf keinen fall
+    - Was laberst du
+    - Ich mache das selbst.
+    - Ich will nicht.
+    - Mach das nicht.
+- intent: location
+  examples: |
+    - aus der [Küche](place)
+    - aus dem [Kühlschrank](place)
+    - [rechts von dir](place)
+    - vom [Tisch](furniture)
+    - von dem [Regal](furniture)
+    - aus der [küche](place)
+- intent: answer_anom_alt
+  examples: |
+    - Okay kannst du das bitte [aufräumen](answer)?
+    - Hey da ist Müll [kannst](answer) du das aufräumen?
+    - Okay kannst du mir bitte eine Fanta [holen](answer)?
+    - Okay kannst du mir dann eine Apfelschorle [holen](answer)
+    - Kannst du mir dann bitte etwas anderes [bringen](answer)
+    - [nichts](answer) machen
+    - Okay [kannst](answer) du mir eine Fanta holen
+    - okay [kannst](answer) du mir eine Fanta holen?
+    - okay [kannst](answer) du mir eine Fanta bringen
+    - okay kannst du mir eine Fanta [holen](answer)
+    - okay kannst du mir eine Fanta [bringen](answer)
+    - okay Kurt die Zeitung brauche ich nicht mehr kannst du das [aufräumen](answer)
+    - okay, kannst du das bitte [aufräumen](answer)
+    - Okay kannst du mir eine Fanta [holen](answer)
+    - hey da ist müll kannst du das [aufräumen](answer)
+    - okay [kannst](answer) du mir eine fanta bringen
+    - hey kurt [kannst](answer) du mir dann bitte etwas anderes bringen
+    - okay kannst du mir eine fanta [bringen](answer)
+    - okay kannst du mir bitte eine Fanta [holen](answer)
+- intent: more_info
+  examples: |
+    - Erzähl mir etwas über deinen [Greifarm](info_type)
+    - Ich möchte mehr über deine [Sensoren](info_type) wissen.
+    - Ich möchte etwas über deinen [Greifarm](info_type) erfahren.
+    - Sag mir mehr zu deinen [Sensoren](info_type).
+    - Kannst du mir etwas über deinen [Greifarm](info_type) sagen?
+    - Wie funktionieren deine [Sensoren](info_type)?
+    - [Greifarm](info_type)
+    - [Greifarm](info_type) wäre schön zu wissen.
+    - [Sensoren](info_type)
+- intent: setProactiveLevel
+  examples: |
+    - [Kein](proactive_level)
+    - [Wenig](proactive_level)
+    - [Mittel](proactive_level)
+    - [Hoch](proactive_level)
+    - [Kein](proactive_level) autonom
+    - [Wenig](proactive_level) autonom
+    - [Mittel](proactive_level) autonom
+    - [Hoch](proactive_level) autonom
+- intent: out_of_scope
+  examples: |
+    - Ich möchte diesen Teppich nicht kaufen.
+    - Wir würden gerne eine Runde Autoscooter fahren
+    - Niemand hat die Absicht eine Mauer zu errichten
+- intent: inform_shopping
+  examples: |
+    - Ich gehe dann [einkaufen](shopping)
+    - ich gehe jetzt [einkaufen](shopping)
+    - Dann gehe ich mal [einkaufen](shopping)
+    - Ich gehe nun [einkaufen](shopping)
+    - Ich werde [einkaufen](shopping) gehen.
+- synonym: Ja
+  examples: |
+    - ja
+    - ja.
+    - jA
+    - js
+    - j
+    - yes
+    - jawohl
+- synonym: Chips
+  examples: |
+    - Chipstüte
+    - Chips Tüte
+- synonym: Mülleimer
+  examples: |
+    - Abfall
+    - Müll
+    - Muell
+- synonym: Badezimmer
+  examples: |
+    - Bad
+- synonym: JSON
+  examples: |
+    - JSON file
+    - JSON_file
+    - JSON-file
+    - JSON-File
+    - Json
+    - json
+    - json file
+    - jsonfile
+- synonym: Nein
+  examples: |
+    - no
+    - n
+    - Nein
+    - nein.
+    - nada
+    - nein
+    - nicht
+- lookup: gegenstand
+  examples: |
+    - Apfel
+    - Birne
+    - Bier
+    - Cola
+    - Banane
+    - Orange
+    - Chips
+    - Kekse
+    - Keksdose
+    - Senf
+    - Nüsse
+    - Nuesse
+    - Pudding
+    - Gelatine
+    - Putzmittel
+    - Tomatendose
+    - Bleiche
+- lookup: place
+  examples: |
+    - Küchentisch
+    - Kuechentisch
+    - Esstisch
+    - Couchtisch
+    - Regal
+    - Sofa
+    - Spüle
+    - Spuele
+    - Mülleimer

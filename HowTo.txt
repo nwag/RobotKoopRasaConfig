@@ -1,0 +1,13 @@
+0. virtuelle rasa umgebung in anaconda prompt (admin) starten
+.\rasaenv\Scripts\activate
+
+cd \Users\gpsarsa\Desktop\GermanBot7_1
+
+1. rasa server starten: 
+rasa run -m models --enable-api --cors '*' --debug
+
+2. rasa action server starten:
+rasa run actions
+
+3. callback server starten:
+python callback_server.py
