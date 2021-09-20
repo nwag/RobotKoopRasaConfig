@@ -36,6 +36,7 @@ globalort = None
 missingInfo = None
 globalAlternative = None # globaler Alternativenslot, da External Intents keine Slots füllen
 globalTaskID = None
+globalDbLocation = None
 anomtype = None  # Variable, um den Typ der Anomalie später für Fallunterscheidungen zu speichern
 
 answobjects = None
@@ -147,22 +148,22 @@ def on_message(client, userdata, message):
 
 
                 else:
-                    print("ERROR: No missing parameters")
+                    print("ERROR, no missing parameters specified at incoming message: missing_parameters")
             else:
-                print("no parameter")
+                print("ERROR, wrong format for incoming message: missing_parameters")
 
 
         # Anomalie wie Müll oder Zeitung entdeckt
         elif dson["type"] == "anomaly_detected":
             print("anomaly detected")
             # {"target_id": "dm", "source_id": "kurt", "timestamp": 1552481472, "task_id":  "task1559481472", "priority": 3, "type": "anomaly_detected", "parameter": {"anomaly": "Bleiche", "place": "couchtisch", alternative_places:["Spüle","Mülleimer"]}} Beispielnachricht für Anomalie von kurt (NUR TEST, NICHT FINAL)
-            if "parameter" in dson and "location" in dson["parameter"]:
-                print("Typ der Anomalie: " + dson["parameter"]["objects"][0])
+            if "parameter" in dson and "location" in dson["parameter"] and "objects" in dson["parameter"]:
                 anomtype = dson["parameter"]["objects"][0]
-                data = '{"name": "EXTERNAL_anomaly_detected", "entities":{"anomaly":"'+dson["parameter"]["objects"][0]+'", "furniture":"'+dson["parameter"]["location"]+'", "alternative_place1":"Spuele","alternative_place2":"Keller" }}'
+                print("Typ der Anomalie: " + anomtype)
+                data = '{"name": "EXTERNAL_anomaly_detected", "entities":{"anomaly":"'+anomtype+'", "furniture":"'+dson["parameter"]["location"]+'", "alternative_place1":"Spüle","alternative_place2":"Keller" }}'
 
             else:
-                print("ERROR")
+                print("ERROR, wrong format for incoming task: anomaly_detected")
 
         # Bot bietet alternative an
         elif dson["type"] == "alternatives":
@@ -185,15 +186,17 @@ def on_message(client, userdata, message):
             if "parameter" in dson and "alternatives" in dson["parameter"] and "object" in dson["parameter"]:
 
                 if dson["parameter"]["type"] == "no_location":
-                    print("alternative location found: "+dson["parameter"]["alternatives"][0]["location"])
+                    #print("alternative location found: "+dson["parameter"]["alternatives"][0]["location"])
                     data = '{"name": "EXTERNAL_assistance", "entities": {"gegenstand":"'+dson["parameter"]["object"]+'", "alternatives":"'+dson["parameter"]["alternatives"][0]["alternative_object"]+'", "place":"'+dson["parameter"]["alternatives"][0]["location"] +'","missing_info":"'+dson["parameter"]["alternatives"][0]["db_location"] +'"}}'
-
+                    globalDbLocation = dson["parameter"]["alternatives"][0]["db_location"]
+                    
                 elif dson["parameter"]["type"] == "not_available":
 
                     print("alternative found: " + dson["parameter"]["alternatives"][0]["alternative_object"])
                     data = '{"name": "EXTERNAL_alternative", "entities": {"gegenstand":"'+dson["parameter"]["object"]+'", "alternatives":"'+dson["parameter"]["alternatives"][0]["alternative_object"]+'", "place":"'+dson["parameter"]["alternatives"][0]["location"] +'","missing_info":"'+dson["parameter"]["alternatives"][0]["db_location"] +'"}}'
                     globalAlternative = dson["parameter"]["alternatives"][0]["alternative_object"]  # Alternative global setzen
                     globalTaskID = dson["task_id"]
+                    globalDbLocation = dson["parameter"]["alternatives"][0]["db_location"]
             else:
                 print("ERROR")
 
@@ -1030,6 +1033,9 @@ class ActionAssistanceReact(Action):
         answertype = tracker.latest_message["intent"].get("name")
 
         optionInt = tracker.get_slot("proactive_level")
+        
+        if optionInt is None:
+            optionInt = 2
 
         gegenstand = tracker.get_slot("gegenstand")
         alternative = tracker.get_slot("alternatives")
@@ -1049,7 +1055,11 @@ class ActionAssistanceReact(Action):
             dispatcher.utter_message("Okay, ich überlasse das dir.")
 
         else:
-            dispatcher.utter_message("Ich bringe den Gegenstand " + gegenstand + " vom " + furniture + " zur " + place + ".")
+            if gegenstand is not None and furniture is not None and place is not None:
+                dispatcher.utter_message("Ich bringe den Gegenstand " + gegenstand + " vom " + furniture + " zur " + place + ".")
+            else:
+                dispatcher.utter_message("Ich verstaue den Gegenstand " + gegenstand".")
+
             return [FollowupAction("action_assistance_clean"), SlotSet("proactive_level", optionInt)]
 
 
