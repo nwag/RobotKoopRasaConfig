@@ -54,7 +54,7 @@ policies:
   - name: MemoizationPolicy #remembers story from training data
     max_history: 3
   - name: TEDPolicy
-    epochs: 20
+    epochs: 25
     constrain_similarities: True
   - name: RulePolicy
     core_fallback_threshold: 0.3

@@ -4,11 +4,11 @@ nlu:
   examples: |
     - Mein Name ist [Juste](name)
     - Ich heiße [Alex](name)
-    - Ich bin [Bernd](name)
+    - Ich bin der [Bernd](name)
     - Nenn mich [Klaus](name)
-    - [Anna](name)
-    - [Ankita](name)
-    - [Arthur](name)
+    - Ich bin die [Anna](name)
+    - Ich bin [Ankita](name)
+    - Mein Name lautet [Arthur](name)
     - [Artur](name)
     - [Ben](name)
     - [Thomas](name)
@@ -25,8 +25,6 @@ nlu:
     - [Matthias](name)
     - [Franz](name)
     - [Günter](name)
-    - [Tibor](name)
-    - [Daniel](name)
 - intent: appConnect
   examples: |
     - Verbindungsaufbau
@@ -208,6 +206,7 @@ nlu:
     - passt
     - bitte
     - unbedingt
+    - ok
 - intent: deny
   examples: |
     - Nein
@@ -351,3 +350,14 @@ nlu:
     - Spüle
     - Spuele
     - Mülleimer
+- lookup: name
+  examples: |
+    - Siegfried
+    - Ronald
+    - Tobias
+    - Schulz
+    - Ronja
+    - Pranav
+    - Uwe
+    - Cornelius
+    - Hannes

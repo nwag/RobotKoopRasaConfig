@@ -23,6 +23,7 @@ intents:
 - setProactiveLevel
 - greet
 - more_info
+- answer_anom_alt
 - EXTERNAL_alternative
 - EXTERNAL_anomaly_detected
 - EXTERNAL_missing_from
@@ -32,6 +33,7 @@ intents:
 - EXTERNAL_tts
 - EXTERNAL_person_detected
 - EXTERNAL_handover_start
+- EXTERNAL_assistance
 entities:
 - alternatives
 - alternative_place1
@@ -132,7 +134,7 @@ responses:
   utter_person_detected:
   - text: Hallo, {name}. Schön dich kennenzulernen.
   utter_answ_greet:
-  - text: Ich werde dir zukünftig etwas im Haushalt helfen. Wenn du mehr wissen möchtest kannst du dich beispielsweise über meinen Greifarm oder meine Sensoren informieren.
+  - text: Ich werde dir zukünftig etwas im Haushalt helfen. Ich würde mich dir gerne kurz vorstellen. Falls du einen Moment Zeit hast, kannst dich über meinen Greifarm oder meine Sensoren informieren. Sag dazu beispielsweise erzähle mir etwas über deinen Greifarm.
   utter_arm:
   - text: Fünf Gelenke erlauben mir meinen Arm in verschiedene Richtungen zu bewegen. Zwei Finger, die mit Kraftsensoren ausgestattet sind, erlauben es mir hierbei Gegenstände mit bis zu 3 kg sicher zu greifen.
   utter_sensors:
@@ -140,7 +142,7 @@ responses:
   utter_more_info:
   - text: Möchtest du sonst noch was wissen?
   utter_request_memorize:
-  - text: Darf ich mich in deiner Wohnung umsehen? Dann kann ich dir beim Haushalt helfen.
+  - text: Um dir besser helfen zu können würde ich mich gerne ein bisschen in deiner Wohnung umsehen. Das wird eine Weile dauern, ist das in Ordnung? Du kannst mich währenddessen auch jederzeit über dein Tablet beobachten.
   utter_memorize:
   - text: Ich sehe mich um.
   utter_handover_start:
@@ -196,13 +198,16 @@ responses:
   utter_out_of_scope:
   - text: Entschuldigung, ich kann diese Anfrage nicht bearbeiten.
   utter_ack_shopping:
-  - text: Viel Spaß beim Einkaufen, {name}.
+  - text: Alles klar, {name}. Wenn du wieder kommst kann ich dir direkt helfen, die Einkäufe einzusortieren. Bis später!
 actions:
 - action_alternative_react
 - action_anom_clean
 - action_anomaly_detected
 - action_anomaly_react
 - action_ask_for_info
+- action_assistance_needed
+- action_assistance_react
+- action_assistance_clean
 - action_bring
 - action_bring_after_from
 - action_clean

@@ -156,10 +156,10 @@ def on_message(client, userdata, message):
         elif dson["type"] == "anomaly_detected":
             print("anomaly detected")
             # {"target_id": "dm", "source_id": "kurt", "timestamp": 1552481472, "task_id":  "task1559481472", "priority": 3, "type": "anomaly_detected", "parameter": {"anomaly": "Bleiche", "place": "couchtisch", alternative_places:["Spüle","Mülleimer"]}} Beispielnachricht für Anomalie von kurt (NUR TEST, NICHT FINAL)
-            if "parameter" in dson and "anomaly" in dson["parameter"]:
-                print("Typ der Anomalie: " + dson["parameter"]["anomaly"])
-                anomtype = dson["parameter"]["anomaly"]
-                data = '{"name": "EXTERNAL_anomaly_detected", "entities":{"anomaly":"'+dson["parameter"]["anomaly"]+'", "place":"'+dson["parameter"]["place"]+'", "alternative_place1":"'+dson["parameter"]["alternative_places"][0]+'","alternative_place2":"'+dson["parameter"]["alternative_places"][1]+'" }}'
+            if "parameter" in dson and "location" in dson["parameter"]:
+                print("Typ der Anomalie: " + dson["parameter"]["objects"][0])
+                anomtype = dson["parameter"]["objects"][0]
+                data = '{"name": "EXTERNAL_anomaly_detected", "entities":{"anomaly":"'+dson["parameter"]["objects"][0]+'", "furniture":"'+dson["parameter"]["location"]+'", "alternative_place1":"Spuele","alternative_place2":"Keller" }}'
 
             else:
                 print("ERROR")
@@ -177,6 +177,25 @@ def on_message(client, userdata, message):
 
             else:
                 print("ERROR")
+         
+        # bot erkundigt sich, wo er einen gegenstand ablegen soll        
+        elif dson["type"] == "assistance":
+            
+            print("assistance_needed")
+            if "parameter" in dson and "alternatives" in dson["parameter"] and "object" in dson["parameter"]:
+
+                if dson["parameter"]["type"] == "no_location":
+                    print("alternative location found: "+dson["parameter"]["alternatives"][0]["location"])
+                    data = '{"name": "EXTERNAL_assistance", "entities": {"gegenstand":"'+dson["parameter"]["object"]+'", "alternatives":"'+dson["parameter"]["alternatives"][0]["alternative_object"]+'", "place":"'+dson["parameter"]["alternatives"][0]["location"] +'","missing_info":"'+dson["parameter"]["alternatives"][0]["db_location"] +'"}}'
+
+                elif dson["parameter"]["type"] == "not_available":
+
+                    print("alternative found: " + dson["parameter"]["alternatives"][0]["alternative_object"])
+                    data = '{"name": "EXTERNAL_alternative", "entities": {"gegenstand":"'+dson["parameter"]["object"]+'", "alternatives":"'+dson["parameter"]["alternatives"][0]["alternative_object"]+'", "place":"'+dson["parameter"]["alternatives"][0]["location"] +'","missing_info":"'+dson["parameter"]["alternatives"][0]["db_location"] +'"}}'
+                    globalAlternative = dson["parameter"]["alternatives"][0]["alternative_object"]  # Alternative global setzen
+                    globalTaskID = dson["task_id"]
+            else:
+                print("ERROR")
 
         elif dson["type"] == "tts":
             print("Text To Speech")
@@ -188,14 +207,7 @@ def on_message(client, userdata, message):
             topublish = makeSuccessJSON(dson)
             client.publish(topicDialStatus, topublish)  # in MQTT verschickt
 
-        elif dson["type"] == "person_detected":
-            print("Person Detected")
-            print(dson["parameter"]["name"])
 
-            data = '{"name": "EXTERNAL_person_detected", "entities": {"person_detected": "' + dson["parameter"]["name"] + '"}}'
-
-            topublish = makeSuccessJSON(dson)  # Python object in Json convertieren
-            client.publish(topicDialStatus, topublish)
 
         elif dson["type"] == "confirm":
             print("Confirm message received")
@@ -216,6 +228,14 @@ def on_message(client, userdata, message):
                         data = '{"name": "EXTERNAL_handover_start", "entities": {"handover_start": "'+ a["target"]+'"}}'
                     else:
                         data = '{"name": "EXTERNAL_handover_start", "entities": {"handover_start": "' + "mein Lieblingsnutzer" + '"}}'
+                    topublish = makeSuccessJSON(dson)  # Python object in Json convertieren
+                    client.publish(topicDialStatus, topublish)
+                elif a["action"] == "person_detected":
+                    print("Person Detected")
+                    print(a["target"])
+
+                    data = '{"name": "EXTERNAL_person_detected", "entities": {"person_detected": "' + a["target"] + '"}}'
+
                     topublish = makeSuccessJSON(dson)  # Python object in Json convertieren
                     client.publish(topicDialStatus, topublish)
 
@@ -283,6 +303,8 @@ class ActionSendBring(Action):
         else:
             tempTaskID = "task" + str(tempTimestamp)
 
+        missing_info = tracker.get_slot("missing_info")
+
         # Json-file als object erstellen
         b = {
             "target_id": "kurt",
@@ -293,7 +315,7 @@ class ActionSendBring(Action):
             "type": "bring",
             "parameter": {
                 "object": gegenstand,
-                "from": place,
+                "from": missing_info,
                 "to": "user",
             }
         }
@@ -359,7 +381,7 @@ class ActionOfferClean(Action):
             dispatcher.utter_message("Ich habe bemerkt, dass du vom Einkaufen zurück bist. Ich werde ihn jetzt für dich aufräumen")
 
 
-            return [FollowupAction("action_clean")]
+            return [FollowupAction("action_clean"), SlotSet("proactive_level",3)]
 
         elif optionInt == 3:  # proaktiv, variante 2: ja/nein-antwort
 
@@ -414,11 +436,12 @@ class ActionCleanReact(Action):
             dispatcher.utter_message("Okay, ich überlasse dir den Einkauf.")
             return[SlotSet("confirmed", False), SlotSet("proactive_level", optionInt)]
 
-        elif answertype == "affirm":
-            print("macht clean")
+        elif answertype == "affirm" or answertype == "answer_anom_alt":
+            print("verstaut die einkäufe")
             optionInt += 1
             if optionInt >4:
                 optionInt == 4
+            dispatcher.utter_message("Okay, ich verstaue den Einkauf.")
             return [SlotSet("confirmed", True),FollowupAction("action_clean")]
 
         else:
@@ -434,7 +457,7 @@ class ActionSendClean(Action):
         print("action_clean wird gestartet")
 
         #furniture = tracker.get_slot('furniture')
-        furniture = "kuechentisch"
+        furniture = "Esstisch"
         #if furniture is not None:
             #furniture = furniture.replace("ä", "ae").replace("Ä", "Ae").replace("ö", "oe").replace("Ö", "oe").replace(
                # "ü",
@@ -451,7 +474,7 @@ class ActionSendClean(Action):
             "priority": 3,
             "type": "clean",
             "parameter": {
-                "furniture": furniture,
+                "to": furniture,
             }
         }  # traget_id: sheep. Da ich aber über unverschlüsselten server sende habe ich sie teebot genannt
         c = json.dumps(b)  # Python object in Json convertieren
@@ -461,18 +484,14 @@ class ActionSendClean(Action):
         print("message published: ", c)
         print("message topicTask: ", topicTask)
         print("\n")
-        dispatcher.utter_message("Okay, ich verstaue den Einkauf.")
+
 
         if tracker.get_slot("proactive_level") is None:
             optionInt = 1
         else:
             optionInt = tracker.get_slot("proactive_level")
 
-        optionInt += 1
-        if optionInt > 4:
-            optionInt == 4
-
-        return [SlotSet("proactive_level", optionInt)]
+        return [SlotSet("proactive_level", optionInt), SlotSet("furniture", furniture)]
 
 
 class ActionSendCommandLfd(Action):
@@ -861,7 +880,7 @@ class ActionAnomalyDetected(Action):
     def run(self, dispatcher, tracker, domain):
 
         anomtype = tracker.get_slot("anomaly")
-        place = tracker.get_slot('place')
+        place = tracker.get_slot('furniture')
         alternative1 = tracker.get_slot("alternative_place1")
         alternative2 = tracker.get_slot("alternative_place2")
         # anomtype = "trash"  # für testzwecke und training
@@ -871,6 +890,9 @@ class ActionAnomalyDetected(Action):
         print("\n")
         print("Test anomtype: " + anomtype)
         print("\n")
+
+        generic_utter = "Achtung! Ich habe " + anomtype + " auf dem " + place + " gefunden. " + anomtype + " sollte außer Reichweite von Kindern aufbewahrt werden. "
+
         if tracker.get_slot("proactive_level") is None:
             optionInt = randrange(2,4)  # wenn nicht gesetzt, zufällig
         else:
@@ -879,34 +901,28 @@ class ActionAnomalyDetected(Action):
         if optionInt == 4:  # proaktiv, variante 3: intervention möglich, roboter räumt von allein auf
 
             print("anomaly option 4 chosen")
+            
+            dispatcher.utter_message(generic_utter+"Ich habe mich entschieden " + anomtype + " zur "+alternative1+" zu bringen.")
 
-
-            dispatcher.utter_message("Ich habe "+anomtype+" auf dem "+place+" gefunden. Da "+anomtype+" gefährlich für Kinder ist, habe ich mich entschieden diese zur "+alternative1+" zu bringen.")
-
-
-            return [FollowupAction("action_anom_clean")]
+            return [FollowupAction("action_anom_clean"), SlotSet("proactive_level",3)]
 
         elif optionInt == 3:  # proaktiv, variante 2: ja/nein-antwort
 
             print("anomaly option 3 chosen")
 
-            dispatcher.utter_message(
-                "Ich habe " + anomtype + " auf dem " + place + " gefunden. Da " + anomtype + " gefährlich für Kinder ist, würde ich diese entweder zur " + alternative1 + " oder zum " +alternative2+ " bringen. Wohin soll ich sie bringen?")
+            dispatcher.utter_message(generic_utter+"Ich kann " + anomtype + " entweder zur " + alternative1 + " oder zum " +alternative2+ " bringen. Wohin soll ich sie bringen?")
 
         elif optionInt == 2:  # proaktiv, variante 1: option zum aufräumbefehl
 
-            print("\n")
             print("anomaly option 2 has been chosen")
-            print("\n")
 
-            dispatcher.utter_message(
-                "Ich habe " + anomtype + " auf dem " + place + " gefunden. " + anomtype + " ist gefährlich für Kinder.")
+            dispatcher.utter_message(generic_utter+"Was soll ich damit machen?")
 
         elif optionInt == 1:  # reaktiv: nutzer:in gibt befehl, Roboter äußert sich nicht
 
-            print("\n")
             print("anomaly option 1 chosen")
-            print("\n")
+
+            dispatcher.utter_message(generic_utter)
 
         return
 
@@ -930,6 +946,10 @@ class ActionAnomalyReact(Action):
 
         optionInt = tracker.get_slot("proactive_level")
 
+        place = tracker.get_slot("place")
+        anomaly = tracker.get_slot("anomaly")
+        furniture = tracker.get_slot("furniture")
+
         print("\n")
         print("answertype: " + answertype)
 
@@ -943,7 +963,11 @@ class ActionAnomalyReact(Action):
             dispatcher.utter_message("Okay, ich überlasse das dir.")
 
         else:
-            return [FollowupAction("action_anom_clean")]
+            dispatcher.utter_message("Ich bringe die " + anomaly + " vom " + furniture + " zur " + place + ".")
+            optionInt += 1
+            if optionInt > 4:
+                optionInt == 4
+            return [FollowupAction("action_anom_clean"), SlotSet("proactive_level", optionInt)]
 
 
         return
@@ -959,6 +983,8 @@ class ActionAnomalyClean(Action):
 
         place = tracker.get_slot("place")
         anomaly = tracker.get_slot("anomaly")
+        furniture = tracker.get_slot("furniture")
+        answertype = tracker.latest_message["intent"].get("name")
         # sende type: anomclean an roboter, hier ändern, wie der befehl an den Roboter später heißen soll
         # als Parameter "is" hab ich mal den typ, also Müll oder Zeitung spendiert
 
@@ -968,10 +994,11 @@ class ActionAnomalyClean(Action):
             "timestamp": int(time.time()),
             "task_id": "task" + str(int(time.time())),
             "priority": 3,
-            "type": "anomclean",
+            "type": "bring",
             "parameter": {
-                "anomaly": anomaly,
-                "place": place
+                "object": anomaly,
+                "from": furniture,
+                "to": place
             }
         }
         c = json.dumps(b)  # Python object in Json convertieren
@@ -983,7 +1010,90 @@ class ActionAnomalyClean(Action):
 
         print("action_anom_clean wird gestartet")
 
-        dispatcher.utter_message("Alles klar!")
+        return
+
+class ActionAssistanceReact(Action):
+
+    # Die Action, die ausgeführt wird, wenn der User auf option 2-4 antwortet
+
+    def name(self):
+        return "action_assistance_react"
+
+    def run(self, dispatcher, tracker, domain):
+
+        global anomtype
+
+        # anomtype = "trash"  # für testzwecke und (interaktives) training
+
+        print("action_assistance_react wird gestartet")
+
+        answertype = tracker.latest_message["intent"].get("name")
+
+        optionInt = tracker.get_slot("proactive_level")
+
+        gegenstand = tracker.get_slot("gegenstand")
+        alternative = tracker.get_slot("alternatives")
+        place = tracker.get_slot("place")
+        furniture = tracker.get_slot("furniture")
+
+        print("\n")
+        print("answertype: " + answertype)
+
+        #Fallunterscheidung: falls irgendwas AUSSER "nicht" oder "nein" im antwortslot steckt, wird aufgeräumt
+        if answertype == "deny":
+            print("\n")
+            print("räumt nicht auf")
+            optionInt -= 2
+            if optionInt <= 0:
+                optionInt == 1
+            dispatcher.utter_message("Okay, ich überlasse das dir.")
+
+        else:
+            dispatcher.utter_message("Ich bringe den Gegenstand " + gegenstand + " vom " + furniture + " zur " + place + ".")
+            return [FollowupAction("action_assistance_clean"), SlotSet("proactive_level", optionInt)]
+
+
+        return
+
+
+
+class ActionAssistanceClean(Action):
+    # TH: hab jetzt der übersicht halber eine eigene action erstellt, die den aufräumbefehl der anomalie (müll, zeitung)
+    # versendet
+    def name(self):
+        return "action_assistance_clean"
+
+    def run(self,dispatcher, tracker, domain):
+
+        gegenstand = tracker.get_slot("gegenstand")
+        alternative = tracker.get_slot("alternatives")
+        place = tracker.get_slot("missing_info")
+        furniture = tracker.get_slot("furniture")
+        answertype = tracker.latest_message["intent"].get("name")
+        # sende type: anomclean an roboter, hier ändern, wie der befehl an den Roboter später heißen soll
+        # als Parameter "is" hab ich mal den typ, also Müll oder Zeitung spendiert
+
+        b = {
+            "target_id": "kurt",
+            "source_id": "dm",
+            "timestamp": int(time.time()),
+            "task_id": "task" + str(int(time.time())),
+            "priority": 3,
+            "type": "bring",
+            "parameter": {
+                "object": gegenstand,
+                "from": furniture,
+                "to": place
+            }
+        }
+        c = json.dumps(b)  # Python object in Json convertieren
+        client.publish(topicTask, c)  # raussenden wohin es gehen soll
+        print("\n")
+        print("message published: ", c)
+        print("message topicTask: ", topicTask)
+        print("\n")
+
+        print("action_assistance_clean wird gestartet")
 
         return
 
@@ -1046,7 +1156,7 @@ class ActionAlternatives(Action):
             dispatcher.utter_message("Es gibt leider " + pronoun_k + gegenstand + ". Es gibt aber noch "+ pronoun_w + alternativeGl +
                                       ". Ich werde dir " + pronoun_w + " holen.")
 
-            return [SlotSet("gegenstand", alternativeGl), FollowupAction("action_bring")]
+            return [SlotSet("gegenstand", alternativeGl), FollowupAction("action_bring"), SlotSet("proactive_level",3)]
 
         elif optionInt == 3:  # proaktiv, variante 2: ja/nein-antwort
 
@@ -1149,19 +1259,19 @@ class ActionSetProactiveLevel(Action):
         print("action_set_level wird gestartet")
 
         proactive_level = tracker.latest_message['entities'][0]['value']
-
+        proactive_level = proactive_level.lower()
         print(proactive_level)
 
-        if proactive_level == "Kein":
+        if proactive_level == "kein":
             dispatcher.utter_message("Okay, ich werde nicht autonom handeln.")
             return[SlotSet("proactive_level", 1)]
-        elif proactive_level == "Wenig":
+        elif proactive_level == "wenig":
             dispatcher.utter_message("Okay, ich werde ein wenig autonom handeln.")
             return[SlotSet("proactive_level", 2)]
-        elif proactive_level == "Mittel":
+        elif proactive_level == "mittel":
             dispatcher.utter_message("Okay, ich werde autonom handeln.")
             return [SlotSet("proactive_level", 3)]
-        elif proactive_level == "Hoch":
+        elif proactive_level == "hoch":
             dispatcher.utter_message("Okay, ich werde vollständig autonom handeln.")
             return [SlotSet("proactive_level", 4)]
         return
@@ -1186,3 +1296,53 @@ class ActionMemorize(Action):
         client.publish(topicTask, toPublish)
 
         return
+
+class ActionAssistanceNeeded(Action):
+    def name(self):
+        return "action_assistance_needed"
+
+    def run(self, dispatcher, tracker, domain):
+
+        print("action_assistance_needed wird gestartet")
+
+        gegenstand = tracker.get_slot("gegenstand")
+        alternative = tracker.get_slot("alternatives")
+        place = tracker.get_slot("place")
+
+        if tracker.get_slot("proactive_level") is None:
+            optionInt = randrange(1,4)
+        else:
+            optionInt = tracker.get_slot("proactive_level")
+
+        if optionInt == 4:  # proaktiv, variante 3: intervention möglich, roboter räumt von allein auf
+
+            print("anomaly option 4 chosen")
+
+            dispatcher.utter_message("Ich weiß nicht wohin der Gegenstand "+gegenstand+" gehört. Ich vermute, dass er zum gleichen Ort"+place+" wie Gegenstand "+alternative+" gehört. Ich werde ihn dorthin bringen.")
+            
+            return [FollowupAction("action_assistance_clean"), SlotSet("proactive_level",3)]
+
+        elif optionInt == 3:  # proaktiv, variante 2: ja/nein-antwort
+
+            print("anomaly option 3 chosen")
+
+            dispatcher.utter_message("Ich weiß nicht wohin der Gegenstand "+gegenstand+" gehört. Wohin soll ich ihn bringen? Eine Möglichkeit wäre der gleiche Ort"+place+" wie Gegenstand "+alternative+"?")
+
+        elif optionInt == 2:  # proaktiv, variante 1: option zum aufräumbefehl
+
+            print("anomaly option 2 has been chosen")
+
+            dispatcher.utter_message("Ich weiß nicht wohin der Gegenstand "+gegenstand+" gehört. Was soll ich damit machen?")
+
+        elif optionInt == 1:  # reaktiv: nutzer:in gibt befehl, Roboter äußert sich nicht
+
+            print("anomaly option 1 chosen")
+
+            dispatcher.utter_message("Ich weiß nicht wohin der Gegenstand "+gegenstand+" gehört.")
+
+            return
+
+
+
+
+
