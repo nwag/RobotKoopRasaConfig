@@ -160,7 +160,7 @@ def on_message(client, userdata, message):
             if "parameter" in dson and "location" in dson["parameter"] and "objects" in dson["parameter"]:
                 anomtype = dson["parameter"]["objects"][0]
                 print("Typ der Anomalie: " + anomtype)
-                data = '{"name": "EXTERNAL_anomaly_detected", "entities":{"anomaly":"'+anomtype+'", "furniture":"'+dson["parameter"]["location"]+'", "alternative_place1":"Spüle","alternative_place2":"Keller" }}'
+                data = '{"name": "EXTERNAL_anomaly_detected", "entities":{"anomaly":"'+anomtype+'", "furniture":"'+dson["parameter"]["location"]+'", "alternative_place1":"Regal","alternative_place2":"Spüle" }}'
 
             else:
                 print("ERROR, wrong format for incoming task: anomaly_detected")
@@ -809,9 +809,6 @@ class ActionBringAfterFrom(Action):
             place = tracker.get_slot('furniture')
             if place is None:
                 place = ""
-            place = place.replace("ä", "ae").replace("Ä", "Ae").replace("ö", "oe").replace("Ö", "oe").replace("ü", "ue")\
-                .replace("Ü", "Ue")
-            place = place.lower()
 
         task_id = "TaskID_"
 
@@ -987,6 +984,21 @@ class ActionAnomalyClean(Action):
         place = tracker.get_slot("place")
         anomaly = tracker.get_slot("anomaly")
         furniture = tracker.get_slot("furniture")
+
+        if place is not None:
+            place = place.replace("ä", "ae").replace("Ä", "Ae").replace("ö", "oe").replace("Ö", "oe").replace("ü", "ue")\
+                .replace("Ü", "Ue")
+            place = place.lower()
+        else:
+            place = ""
+
+        if furniture is not None:
+            furniture = furniture.replace("ä", "ae").replace("Ä", "Ae").replace("ö", "oe").replace("Ö", "oe").replace("ü", "ue")\
+                .replace("Ü", "Ue")
+            furniture = furniture.lower()
+        else:
+            furniture = ""
+        
         answertype = tracker.latest_message["intent"].get("name")
         # sende type: anomclean an roboter, hier ändern, wie der befehl an den Roboter später heißen soll
         # als Parameter "is" hab ich mal den typ, also Müll oder Zeitung spendiert
