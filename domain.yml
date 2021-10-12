@@ -3,7 +3,7 @@ session_config:
   session_expiration_time: 60
   carry_over_slots_to_new_session: true
 intents:
-- inform_shopping
+#- inform_shopping
 - memorize
 - appConnect
 - bring
@@ -11,12 +11,12 @@ intents:
 - deny
 - location
 - clean
-- stopLFD
-- commandLFD
-- startLFD
-- deleteLFD
-- reproduceLFD
-- saveLFD
+#- stopLFD
+#- commandLFD
+#- startLFD
+#- deleteLFD
+#- reproduceLFD
+#- saveLFD
 - moveto
 - take
 - bye
@@ -30,39 +30,45 @@ intents:
 - EXTERNAL_missing_info
 - EXTERNAL_missing_to
 - EXTERNAL_missing_object
-- EXTERNAL_tts
+#- EXTERNAL_tts
 - EXTERNAL_person_detected
 - EXTERNAL_handover_start
+- EXTERNAL_handover_completed
+- EXTERNAL_success
 - EXTERNAL_assistance
 entities:
 - alternatives
 - alternative_place1
 - alternative_place2
 - anomaly
-- answer
 - furniture
 - gegenstand
 - handover_start
+- handover_completed
 - info_type
-- keyword
+#- keyword
 - missing_from
 - missing_info
 - missing_object
 - missing_to
-- name
+- PERSON
 - place
 - person_detected
 - proactive_level
 - shopping
 - task
-- tts
+- success
+#- tts
 slots:
-  answer:
-    type: text
-    influence_conversation: false
+ # answer:
+ #   type: text
+  #  influence_conversation: false
   confirmed:
     type: bool
     influence_conversation: true
+  success:
+    type: bool
+    influence_conversation: false
   alternatives:
     type: text
     influence_conversation: false
@@ -75,10 +81,10 @@ slots:
   go_on:
     type: bool
     influence_conversation: false
-  keyword:
-    type: text
-    influence_conversation: false
-  name:
+  #keyword:
+  #  type: text
+  # influence_conversation: false
+  PERSON:
     type: text
     influence_conversation: false
   shopping:
@@ -94,9 +100,6 @@ slots:
   task:
     type: text
     influence_conversation: false
-  tts:
-    type: text
-    influence_conversation: false
   anomaly:
     type: text
     influence_conversation: true
@@ -110,9 +113,6 @@ slots:
     type: text
     influence_conversation: false
   missing_object:
-    type: text
-    influence_conversation: false
-  handover_start:
     type: text
     influence_conversation: false
   proactive_level:
@@ -131,22 +131,22 @@ slots:
     influence_conversation: false
     
 responses:
-  utter_person_detected:
-  - text: Hallo, {name}. Schön dich kennenzulernen.
   utter_answ_greet:
-  - text: Ich werde dir zukünftig etwas im Haushalt helfen. Ich würde mich dir gerne kurz vorstellen. Falls du einen Moment Zeit hast, kannst dich über meinen Greifarm oder meine Sensoren informieren. Sag dazu beispielsweise erzähle mir etwas über deinen Greifarm.
+  - text: Ich werde dir zukünftig etwas im Haushalt helfen. Ich würde mich dir gerne kurz vorstellen. Falls du einen Moment Zeit hast, kannst du dich über meinen Greifarm oder meine Sensoren informieren. Sag dazu beispielsweise erzähle mir etwas über deinen Greifarm.
   utter_arm:
   - text: Fünf Gelenke erlauben mir meinen Arm in verschiedene Richtungen zu bewegen. Zwei Finger, die mit Kraftsensoren ausgestattet sind, erlauben es mir hierbei Gegenstände mit bis zu 3 kg sicher zu greifen.
   utter_sensors:
   - text: In meinem Kopf befinden sich verschiedene Sensoren und eine Kamera, mit denen ich mein Umfeld, Abstände, Personen und Objekte erkennen kann. Mit meinen Lautsprechern und Mikrofonen kann ich mit dir kommunizieren. Zusätzlich verfüge ich über einen Laserscanner und Ultraschallsensoren um Kollisionen zu vermeiden.
   utter_more_info:
-  - text: Möchtest du sonst noch was wissen?
+  - text: Möchtest du sonst noch etwas wissen?
   utter_request_memorize:
-  - text: Um dir besser helfen zu können würde ich mich gerne ein bisschen in deiner Wohnung umsehen. Das wird eine Weile dauern, ist das in Ordnung? Du kannst mich währenddessen auch jederzeit über dein Tablet beobachten.
+  - text: Um dir besser helfen zu können würde ich mich gerne ein bisschen in deiner Wohnung umsehen. Das wird eine Weile dauern, ist das in Ordnung? Wir bleiben währenddessen jederzeit über dein Tablet verbunden.
   utter_memorize:
   - text: Ich sehe mich um.
   utter_handover_start:
-  - text: Hier ist dein Gegenstand, {handover_start}.
+  - text: Ich möchte dir gerne einen Gegenstand überreichen. Du brauchst keine Angst haben, mein Greifarm wird nun in deine Richtung ausgestreckt.
+  utter_handover_completed:
+  - text: Super, vielen Dank für deine Mithilfe. 
   utter_appConnect:
   - text: Der Verbindungsaufbau war erfolgreich.
   utter_name:
@@ -181,12 +181,12 @@ responses:
   - text: Ich fange nun mit dem lernen an.
   utter_stop_lfd:
   - text: Verstanden, ich werde das lernen nun abschließen.
-  utter_save_lfd:
-  - text: Okay, ich werde die Demonstration abspeichern.
-  utter_delete_lfd:
-  - text: Alles klar, ich werde die Demonstration löschen.
-  utter_reproduce_lfd:
-  - text: Okay ich werde die gelernte Aufgabe ausführen.
+ # utter_save_lfd:
+ # - text: Okay, ich werde die Demonstration abspeichern.
+ # utter_delete_lfd:
+  #- text: Alles klar, ich werde die Demonstration löschen.
+ # utter_reproduce_lfd:
+  #- text: Okay ich werde die gelernte Aufgabe ausführen.
   utter_missing_info:
   - text: Ich frage hier nach fehlenden Infos {missing_info}.
   utter_missing_from:
@@ -197,8 +197,8 @@ responses:
   - text: 'Wie autonom soll ich handeln? Du kannst zwischen vier Varianten entscheiden: Nicht autonom, dann werde ich nur auf Zuruf handeln. Wenig autonom bedeutet, dass ich dich hinweisen werde wenn ich dich unterstützen könnte. Im Modus mittelautonom werde ich dir aktiv Hilfe anbieten, während ich in der Einstellung hochautonom selbstständig Aufgaben ausführen werde.'
   utter_out_of_scope:
   - text: Entschuldigung, ich kann diese Anfrage nicht bearbeiten.
-  utter_ack_shopping:
-  - text: Alles klar, {name}. Wenn du wieder kommst kann ich dir direkt helfen, die Einkäufe einzusortieren. Bis später!
+ # utter_ack_shopping:
+  #- text: Alles klar, {name}. Wenn du wieder kommst kann ich dir direkt helfen, die Einkäufe einzusortieren. Bis später!
 actions:
 - action_alternative_react
 - action_anom_clean
@@ -210,20 +210,22 @@ actions:
 - action_assistance_clean
 - action_bring
 - action_bring_after_from
-- action_clean
-- action_clean_react
-- action_command_lfd
-- action_delete_lfd
+- action_success_message
+#- action_clean
+#- action_clean_react
+#- action_command_lfd
+#- action_delete_lfd
+- action_greet_person
 - action_memorize
 - action_more_info
 - action_offer_alternative
 - action_offer_clean
-- action_reproduce_lfd
-- action_save_lfd
+#- action_reproduce_lfd
+#- action_save_lfd
 - action_set_level
-- action_start_lfd
-- action_stop_lfd
-- utter_ack_shopping
+#- action_start_lfd
+#- action_stop_lfd
+#- utter_ack_shopping
 - utter_appConnect
 - utter_arm
 - utter_ask_level
@@ -231,24 +233,24 @@ actions:
 - utter_bring_ende
 - utter_bringwhat
 - utter_bye
-- utter_command_lfd
-- utter_delete_lfd
+#- utter_command_lfd
+#- utter_delete_lfd
 - utter_fehlender_parameter_place
 - utter_handover_start
+- utter_handover_completed
 - utter_info
 - utter_memorize
 - utter_missing_from
 - utter_more_info
 - utter_moveto
 - utter_not_found
-- utter_person_detected
 - utter_please_rephrase
-- utter_reproduce_lfd
+#- utter_reproduce_lfd
 - utter_request_memorize
-- utter_save_lfd
+#- utter_save_lfd
 - utter_sensors
-- utter_start_lfd
-- utter_stop_lfd
+#- utter_start_lfd
+#- utter_stop_lfd
 - utter_take
 - utter_where
 - utter_answ_greet

@@ -1,41 +1,5 @@
 version: "2.0"
 stories:
-- story: story_clean
-  steps:
-  - intent: EXTERNAL_person_detected
-  - slot_was_set:
-    - shopping: einkaufen
-  - action: action_offer_clean
-  - checkpoint: clean_confirmation
-  
-- story: confirm clean_confirmation
-  steps:
-  - checkpoint: clean_confirmation
-  - intent: affirm
-  - action: action_clean_react
-
-- story: confirm clean_confirmation
-  steps:
-  - checkpoint: clean_confirmation
-  - intent: answer_anom_alt
-  - action: action_clean_react
-
-- story: deny clean_confirmation
-  steps:
-  - checkpoint: clean_confirmation
-  - intent: deny
-  - action: action_clean_react
-
-- story: missing_location_story
-  steps:
-  - intent: EXTERNAL_missing_from
-  - action: action_ask_for_info
-  - intent: location
-  - slot_was_set:
-      - gegenstand: Chips
-  - action: action_bring_after_from
-  - action: action_restart
-
 - story: missing_object_story
   steps:
   - intent: EXTERNAL_missing_from
@@ -55,13 +19,11 @@ stories:
   - intent: affirm
   - action: action_alternative_react
 
-
 - story: deny alternative
   steps:
   - checkpoint: ask_confirmation
   - intent: deny
   - action: action_alternative_react
-
   
 - story: start interaction
   steps:
@@ -70,7 +32,7 @@ stories:
     - shopping: zuhause
   - action: utter_greet
   - intent: greet
-  - action: utter_person_detected
+  - action: action_greet_person
   - action: utter_answ_greet
   - intent: more_info
   - slot_was_set:
@@ -85,23 +47,28 @@ stories:
       - shopping: zuhause
   - action: utter_greet
   - intent: greet
-  - action: utter_person_detected
+  - action: action_greet_person
   - action: utter_answ_greet
+
+- story: start introduction
+  steps:
+  - intent: greet
+  - action: action_greet_person
+  - action: utter_answ_greet
+  - intent: more_info
+  - slot_was_set:
+      - info_type: Sensoren
+  - action: action_more_info
+  - checkpoint: info_confirmation
 
 - story: affirm info
   steps:
   - checkpoint: info_confirmation
   - intent: affirm
   - action: action_more_info
-  - action: utter_ask_level
-  - intent: setProactiveLevel
-  - slot_was_set:
-      - proactive_level: wenig
-  - action: action_set_level
   - action: utter_request_memorize
-  - intent: inform_shopping
   - action: action_memorize
-  - action: utter_ack_shopping
+  - intent: affirm
   - intent: EXTERNAL_anomaly_detected
   - slot_was_set:
       - anomaly: bleiche
@@ -113,35 +80,15 @@ stories:
   steps:
   - checkpoint: info_confirmation
   - intent: deny
-  - action: utter_ask_level
-  - intent: setProactiveLevel
-  - slot_was_set:
-      - proactive_level: mittel
-  - action: action_set_level
   - action: utter_request_memorize
   - intent: affirm
-  - slot_was_set:
-    - shopping: einkaufen
   - action: action_memorize
-  - action: utter_ack_shopping
   - intent: EXTERNAL_anomaly_detected
   - slot_was_set:
       - anomaly: bleiche
   - action: action_anomaly_detected
   - intent: deny
   - action: action_anomaly_react
-
-- story: memorize_clean
-  steps:
-  - action: utter_request_memorize
-  - intent: inform_shopping
-  - action: utter_memorize
-  - action: action_memorize
-  - intent: EXTERNAL_person_detected
-  - slot_was_set:
-    - shopping: einkaufen
-  - action: action_offer_clean
-  - checkpoint: clean_confirmation
 
 - story: anomaly detected
   steps:
@@ -151,8 +98,6 @@ stories:
   - action: action_anomaly_detected
   - intent: affirm
   - action: action_anomaly_react
-
-
 
 - story: anomaly putzmittel
   steps:
@@ -171,39 +116,3 @@ stories:
   - action: action_anomaly_detected
   - intent: deny
   - action: action_anomaly_react
-
-- story: assistance needed
-  steps:
-  - intent: EXTERNAL_assistance
-  - slot_was_set:
-    - gegenstand: Senf
-  - action: action_assistance_needed
-  - intent: moveto
-  - action: action_assistance_react
-
-- story: assistance deny
-  steps:
-  - intent: EXTERNAL_assistance
-  - slot_was_set:
-    - gegenstand: Senf
-  - action: action_assistance_needed
-  - intent: deny
-  - action: action_assistance_react
-
-- story: assistance requested
-  steps:
-  - intent: EXTERNAL_assistance
-  - slot_was_set:
-    - gegenstand: ketchup
-  - action: action_assistance_needed
-  - intent: affirm
-  - action: action_assistance_react
-
-- story: assistance denied
-  steps:
-  - intent: EXTERNAL_assistance
-  - slot_was_set:
-    - gegenstand: ketchup
-  - action: action_assistance_needed
-  - intent: deny
-  - action: action_assistance_react

@@ -37,6 +37,9 @@ missingInfo = None
 globalAlternative = None # globaler Alternativenslot, da External Intents keine Slots füllen
 globalTaskID = None
 globalDbLocation = None
+
+globalLastAction = None
+
 anomtype = None  # Variable, um den Typ der Anomalie später für Fallunterscheidungen zu speichern
 
 answobjects = None
@@ -48,26 +51,9 @@ answer_flag = 1  # 0=wartet auf keine Antwort #1=wartet auf Antwort
 
 client = mqtt.Client("ds")
 
-# für test den Host nehmen
-#host_name = "test.mosquitto.org"
-# host_name = "mqtt.eclipse.org"
-# host_name = "192.168.178.149"
-# host_name = "iot.eclipse.org"
 host_name = "134.60.153.113"
 
-# für Hochschule Weingarten den folgenden Host und Client nehmen
-# host_name="192.168.5.112"
-# host_name="192.168.0.124"
-# host_name = '0.tcp.eu.ngrok.io'
-# client.connect(host_name, 11667, 60)
 client.connect(host_name, 1883, 60)
-
-# host_name="iot.eclipse.org" #falls test.mosquitto.org down ist oder nicht funktioniert
-# client.connect(host_name)
-
-# inoffizielle topicTask
-#topicTask = "test/dialogue/task"
-#topicStatus = "test/robots/status"
 
 # Offizielle topicTask
 topicTask="/dialogue/task"
@@ -76,7 +62,7 @@ topicRobotTask="/robots/task"
 topicDialStatus="/dialogue/status"
 
 client.loop_start()
-# client.subscribe(topicTask)#eigentlich "/dialogue/display" #nicht subscriben da der Bot sonst seine eigenen Nachrichten bekommt
+
 client.subscribe(topicStatus)
 client.subscribe(topicRobotTask)
 
@@ -110,6 +96,7 @@ def on_message(client, userdata, message):
     # globale Variable anlegen, weil durch External Trigger (warum auch immer) keine Slots mit Entities gefüllt werden.
     global globalTaskID
     global anomtype
+    global globalLastAction
     data = ""
 
     output = str(message.payload.decode("utf-8"))
@@ -124,123 +111,77 @@ def on_message(client, userdata, message):
     #Fallunterscheidung der Nachrichtentypen
     if "type" in dson:
 
-        # Bot frägt nach fehlender information
-        if dson["type"] == "missing_info":
-            # {"target_id": "dm", "source_id": "kurt", "timestamp": 1552481472, "task_id":  "task1559481472", "priority": 3, "type": "missing_info", "parameter": {"missing_parameters": "from", "lang": "de_DE"}}
-            if "parameter" in dson:
-
-                print("asking for missing location of item")
-
-                if "missing_parameters" in dson["parameter"]:
-
-                    print("missing parameters: ", dson["parameter"]["missing_parameters"])
-                    missingInfo = dson["parameter"]["missing_parameters"]
-
-                    #falls noch andere Intents getriggert werden möchten, hier eine Fallunterscheidung
-                    if dson["parameter"]["missing_parameters"] == "from":
-                        data = '{"name": "EXTERNAL_missing_from"}'
-                    elif dson["parameter"]["missing_parameters"] == "object":
-                        data = '{"name": "EXTERNAL_missing_from"}'
-                    elif dson["parameter"]["missing_parameters"] == "to":
-                        data = '{"name": "EXTERNAL_missing_from"}'
-                    elif dson["parameter"]["missing_parameters"] == "furniture":
-                        data = '{"name": "EXTERNAL_missing_from"}'
-
-
-                else:
-                    print("ERROR, no missing parameters specified at incoming message: missing_parameters")
-            else:
-                print("ERROR, wrong format for incoming message: missing_parameters")
-
-
         # Anomalie wie Müll oder Zeitung entdeckt
-        elif dson["type"] == "anomaly_detected":
+        if dson["type"] == "anomaly_detected":
             print("anomaly detected")
-            # {"target_id": "dm", "source_id": "kurt", "timestamp": 1552481472, "task_id":  "task1559481472", "priority": 3, "type": "anomaly_detected", "parameter": {"anomaly": "Bleiche", "place": "couchtisch", alternative_places:["Spüle","Mülleimer"]}} Beispielnachricht für Anomalie von kurt (NUR TEST, NICHT FINAL)
+            
             if "parameter" in dson and "location" in dson["parameter"] and "objects" in dson["parameter"]:
                 anomtype = dson["parameter"]["objects"][0]
                 print("Typ der Anomalie: " + anomtype)
-                data = '{"name": "EXTERNAL_anomaly_detected", "entities":{"anomaly":"'+anomtype+'", "furniture":"'+dson["parameter"]["location"]+'", "alternative_place1":"Regal","alternative_place2":"Spüle" }}'
-
+                data = '{"name": "EXTERNAL_anomaly_detected", "entities": {"anomaly":"'+anomtype+'", "furniture":"'+dson["parameter"]["location"]+'", "alternative_place1":"Regal","alternative_place2":"Regal"}}'
+                globalLastAction = "anomaly_detected"
+                topublish = makeSuccessJSON(dson)  # Python object in Json convertieren
+                client.publish(topicDialStatus, topublish)
             else:
                 print("ERROR, wrong format for incoming task: anomaly_detected")
 
-        # Bot bietet alternative an
+       
         elif dson["type"] == "alternatives":
-            # {"target_id": "dm", "source_id": "kurt", "timestamp": 1552481472, "task_id":  "task1559481472", "priority": 3, "type": "offer_alternative", "parameter": {"alternative": "Fanta", "lang": "de_DE"}} Beispielnachricht für Alternative von kurt (NUR TEST, NICHT FINAL)
-            print("offering alternative")
+            print("offering alternatives")
+            
             if "parameter" in dson and "alternatives" in dson["parameter"]:
                 print("alternative found: " + dson["parameter"]["alternatives"][0])
                 data = '{"name": "EXTERNAL_alternative", "entities": {"alternatives": "' + dson["parameter"]["alternatives"][0] + '"}}'
                 globalAlternative = dson["parameter"]["alternatives"][0]  # Alternative global setzen
                 globalTaskID = dson["task_id"]
                 # data = '{"name": "EXTERNAL_alternative", "entities": {"alternative": "Fanta"}}'
+                globalLastAction = "alternatives"
+                topublish = makeSuccessJSON(dson)  # Python object in Json convertieren
+                client.publish(topicDialStatus, topublish)
 
             else:
-                print("ERROR")
-         
-        # bot erkundigt sich, wo er einen gegenstand ablegen soll        
-        elif dson["type"] == "assistance":
-            
-            print("assistance_needed")
-            if "parameter" in dson and "alternatives" in dson["parameter"] and "object" in dson["parameter"]:
-
-                if dson["parameter"]["type"] == "no_location":
-                    #print("alternative location found: "+dson["parameter"]["alternatives"][0]["location"])
-                    data = '{"name": "EXTERNAL_assistance", "entities": {"gegenstand":"'+dson["parameter"]["object"]+'", "alternatives":"'+dson["parameter"]["alternatives"][0]["alternative_object"]+'", "place":"'+dson["parameter"]["alternatives"][0]["location"] +'","missing_info":"'+dson["parameter"]["alternatives"][0]["db_location"] +'"}}'
-                    globalDbLocation = dson["parameter"]["alternatives"][0]["db_location"]
-                    
-                elif dson["parameter"]["type"] == "not_available":
-
-                    print("alternative found: " + dson["parameter"]["alternatives"][0]["alternative_object"])
-                    data = '{"name": "EXTERNAL_alternative", "entities": {"gegenstand":"'+dson["parameter"]["object"]+'", "alternatives":"'+dson["parameter"]["alternatives"][0]["alternative_object"]+'", "place":"'+dson["parameter"]["alternatives"][0]["location"] +'","missing_info":"'+dson["parameter"]["alternatives"][0]["db_location"] +'"}}'
-                    globalAlternative = dson["parameter"]["alternatives"][0]["alternative_object"]  # Alternative global setzen
-                    globalTaskID = dson["task_id"]
-                    globalDbLocation = dson["parameter"]["alternatives"][0]["db_location"]
-            else:
-                print("ERROR")
-
-        elif dson["type"] == "tts":
-            print("Text To Speech")
-            print(dson["parameter"]["text"])
-
-            data = '{"name": "EXTERNAL_tts", "entities": {"tts": "' + dson["parameter"]["text"] + '"}}'
-
-
-            topublish = makeSuccessJSON(dson)
-            client.publish(topicDialStatus, topublish)  # in MQTT verschickt
-
-
-
+                print("ERROR, wrong format for incoming task: offering_alternatives")
+    
         elif dson["type"] == "confirm":
             print("Confirm message received")
 
         elif dson["type"]  == "success":
             print("Success message received")
+            success = dson["parameter"]["success"]
+            print("success: "+ success)
+
+            data = '{"name": "EXTERNAL_success", "entities": {"success": "' + success + '"}}'
 
 
         elif dson["type"] == "progress":
-            print("Progress message")
+            print("Progress message received")
             #todo try catch
-            performedActions = dson["parameter"]["performed_actions"]
-            print(performedActions)
+            performedAction = dson["parameter"]["performed_actions"][0]
+            print("performed action: " , performedAction)
 
-            for a in performedActions:
-                if a["action"] == "handover_start":
-                    if a["target"] != "user":
-                        data = '{"name": "EXTERNAL_handover_start", "entities": {"handover_start": "'+ a["target"]+'"}}'
-                    else:
-                        data = '{"name": "EXTERNAL_handover_start", "entities": {"handover_start": "' + "mein Lieblingsnutzer" + '"}}'
-                    topublish = makeSuccessJSON(dson)  # Python object in Json convertieren
-                    client.publish(topicDialStatus, topublish)
-                elif a["action"] == "person_detected":
-                    print("Person Detected")
-                    print(a["target"])
-
-                    data = '{"name": "EXTERNAL_person_detected", "entities": {"person_detected": "' + a["target"] + '"}}'
-
-                    topublish = makeSuccessJSON(dson)  # Python object in Json convertieren
-                    client.publish(topicDialStatus, topublish)
+            if performedAction["action"] == "handover_start":
+                print("handover started")
+                print("target: " + performedAction["target"])
+                data = '{"name": "EXTERNAL_handover_start", "entities": {"handover_start": "'+ performedAction["target"]+'"}}'
+                globalLastAction = "handover_start"
+                topublish = makeSuccessJSON(dson)  # Python object in Json convertieren
+                client.publish(topicDialStatus, topublish)
+                    
+            elif performedAction["action"] == "handover_completed":
+                print("handover completed")
+                print("target: " + performedAction["target"])
+                data = '{"name": "EXTERNAL_handover_completed", "entities": {"handover_completed": "' + performedAction["target"] + '"}}'
+                globalLastAction = "handover_completed"
+                topublish = makeSuccessJSON(dson)  # Python object in Json convertieren
+                client.publish(topicDialStatus, topublish)
+                    
+            elif performedAction["action"] == "person_detected":
+                print("Person Detected")
+                print("target: " + performedAction["target"])
+                data = '{"name": "EXTERNAL_person_detected", "entities": {"person_detected": "' + performedAction["target"] + '"}}'
+                globalLastAction = "person_detected"
+                topublish = makeSuccessJSON(dson)  # Python object in Json convertieren
+                client.publish(topicDialStatus, topublish)
 
         else:
             print("nothing to do")
@@ -263,9 +204,6 @@ def on_message(client, userdata, message):
 
 client.on_message = on_message
 
-
-
-
 class ActionSendBring(Action):
     def name(self):
 
@@ -274,7 +212,7 @@ class ActionSendBring(Action):
     def run(self, dispatcher, tracker, domain):
         print("action_bring wird gestartet")
         global globalTaskID
-
+        globalLastAction = "bring"
         if tracker.get_slot('gegenstand') is not None:
             # wenn möglich einfach in utf-8 umwandeln
             gegenstand = tracker.get_slot('gegenstand')
@@ -350,19 +288,16 @@ class ActionSendBring(Action):
         antwort_str = "Alles klar, verstanden."
         dispatcher.utter_message(antwort_str)
 
-        if tracker.get_slot("proactive_level") is None:
-            optionInt = 1
-        else:
-            optionInt = tracker.get_slot("proactive_level")
+       # if tracker.get_slot("proactive_level") is None:
+         #   optionInt = 1
+       # else:
+         #  optionInt = tracker.get_slot("proactive_level")
 
         #optionInt += 1
         #if optionInt > 4:
             #optionInt == 4
 
         return [SlotSet("gegenstand", gegenstand)]
-
-
-
 
 class ActionOfferClean(Action):
     def name(self):
@@ -371,6 +306,8 @@ class ActionOfferClean(Action):
     def run(self, dispatcher, tracker, domain):
 
         print("action_offer_clean wird gestartet")
+
+        globalLastAction = "offer_clean"
 
         if tracker.get_slot("proactive_level") is None:
             optionInt = randrange(1,3)
@@ -416,12 +353,8 @@ class ActionCleanReact(Action):
         return "action_clean_react"
 
     def run(self, dispatcher, tracker, domain):
-
-
-
         print("action_clean_react wird gestartet")
-
-
+        globalLastAction = "clean_react"
         answertype = tracker.latest_message["intent"].get("name")
 
         print("answertype: " + answertype)
@@ -894,7 +827,7 @@ class ActionAnomalyDetected(Action):
         generic_utter = "Achtung! Ich habe " + anomtype + " auf dem " + place + " gefunden. " + anomtype + " sollte außer Reichweite von Kindern aufbewahrt werden. "
 
         if tracker.get_slot("proactive_level") is None:
-            optionInt = randrange(2,4)  # wenn nicht gesetzt, zufällig
+            optionInt = 4  # wenn nicht gesetzt, zufällig
         else:
             optionInt = tracker.get_slot("proactive_level")
 
@@ -944,7 +877,7 @@ class ActionAnomalyReact(Action):
 
         answertype = tracker.latest_message["intent"].get("name")
 
-        optionInt = tracker.get_slot("proactive_level")
+        #optionInt = tracker.get_slot("proactive_level")
 
         place = tracker.get_slot("place")
         anomaly = tracker.get_slot("anomaly")
@@ -957,17 +890,17 @@ class ActionAnomalyReact(Action):
         if answertype == "deny":
             print("\n")
             print("räumt nicht auf")
-            optionInt -= 2
-            if optionInt <= 0:
-                optionInt == 1
+           # optionInt -= 2
+           #if optionInt <= 0:
+               # optionInt == 1
             dispatcher.utter_message("Okay, ich überlasse das dir.")
 
         else:
             dispatcher.utter_message("Ich bringe die " + anomaly + " vom " + furniture + " zur " + place + ".")
-            optionInt += 1
-            if optionInt > 4:
-                optionInt == 4
-            return [FollowupAction("action_anom_clean"), SlotSet("proactive_level", optionInt)]
+            #optionInt += 1
+            #if optionInt > 4:
+               # optionInt == 4
+            return [FollowupAction("action_anom_clean")]
 
 
         return
@@ -998,6 +931,10 @@ class ActionAnomalyClean(Action):
             furniture = furniture.lower()
         else:
             furniture = ""
+
+        #TODO nur für Studie
+        place = ""
+        furniture = ""
         
         answertype = tracker.latest_message["intent"].get("name")
         # sende type: anomclean an roboter, hier ändern, wie der befehl an den Roboter später heißen soll
@@ -1044,10 +981,10 @@ class ActionAssistanceReact(Action):
 
         answertype = tracker.latest_message["intent"].get("name")
 
-        optionInt = tracker.get_slot("proactive_level")
+        #optionInt = tracker.get_slot("proactive_level")
         
-        if optionInt is None:
-            optionInt = 2
+        #if optionInt is None:
+            #optionInt = 2
 
         gegenstand = tracker.get_slot("gegenstand")
         alternative = tracker.get_slot("alternatives")
@@ -1061,62 +998,18 @@ class ActionAssistanceReact(Action):
         if answertype == "deny":
             print("\n")
             print("räumt nicht auf")
-            optionInt -= 2
-            if optionInt <= 0:
-                optionInt == 1
+           # optionInt -= 2
+            #if optionInt <= 0:
+              #  optionInt == 1
             dispatcher.utter_message("Okay, ich überlasse das dir.")
 
         else:
             if gegenstand is not None and furniture is not None and place is not None:
                 dispatcher.utter_message("Ich bringe den Gegenstand " + gegenstand + " vom " + furniture + " zur " + place + ".")
             else:
-                dispatcher.utter_message("Ich verstaue den Gegenstand " + gegenstand".")
+                dispatcher.utter_message("Ich verstaue den Gegenstand " + gegenstand+".")
 
-            return [FollowupAction("action_assistance_clean"), SlotSet("proactive_level", optionInt)]
-
-
-        return
-
-
-
-class ActionAssistanceClean(Action):
-    # TH: hab jetzt der übersicht halber eine eigene action erstellt, die den aufräumbefehl der anomalie (müll, zeitung)
-    # versendet
-    def name(self):
-        return "action_assistance_clean"
-
-    def run(self,dispatcher, tracker, domain):
-
-        gegenstand = tracker.get_slot("gegenstand")
-        alternative = tracker.get_slot("alternatives")
-        place = tracker.get_slot("missing_info")
-        furniture = tracker.get_slot("furniture")
-        answertype = tracker.latest_message["intent"].get("name")
-        # sende type: anomclean an roboter, hier ändern, wie der befehl an den Roboter später heißen soll
-        # als Parameter "is" hab ich mal den typ, also Müll oder Zeitung spendiert
-
-        b = {
-            "target_id": "kurt",
-            "source_id": "dm",
-            "timestamp": int(time.time()),
-            "task_id": "task" + str(int(time.time())),
-            "priority": 3,
-            "type": "bring",
-            "parameter": {
-                "object": gegenstand,
-                "from": furniture,
-                "to": place
-            }
-        }
-        c = json.dumps(b)  # Python object in Json convertieren
-        client.publish(topicTask, c)  # raussenden wohin es gehen soll
-        print("\n")
-        print("message published: ", c)
-        print("message topicTask: ", topicTask)
-        print("\n")
-
-        print("action_assistance_clean wird gestartet")
-
+            return [FollowupAction("action_assistance_clean")]
         return
 
 
@@ -1165,11 +1058,10 @@ class ActionAlternatives(Action):
             pronoun_w = "eines "
 
         if tracker.get_slot("proactive_level") is None:
-            optionInt = randrange(1,4)
+            optionInt = 3
         else:
             optionInt = tracker.get_slot("proactive_level")
 
-        counttime = 0
 
         if optionInt == 4:
         # proaktiv, variante 3: intervention möglich, roboter räumt von allein auf
@@ -1221,19 +1113,19 @@ class ActionAlternativesReact(Action):
         print("answertype: " + answertype)
         print(gegenstand)
 
-        if tracker.get_slot("proactive_level") is None:
-            optionInt = randrange(1,4)  # wenn nicht gesetzt, zufällig
-        else:
-            optionInt = tracker.get_slot("proactive_level")
+        #if tracker.get_slot("proactive_level") is None:
+           # optionInt = randrange(1,4)  # wenn nicht gesetzt, zufällig
+        #else:
+            #optionInt = tracker.get_slot("proactive_level")
 
         if answertype == "deny" and gegenstand is not None:
             print("bringt keine alternative")
             optionInt -= 2
-            if optionInt <= 0:
-                optionInt == 1
+           # if optionInt <= 0:
+              #  optionInt == 1
 
             dispatcher.utter_message("Okay, dann überlasse ich es dir.")
-            return[SlotSet("gegenstand", None),SlotSet("confirmed", False), SlotSet("proactive_level", optionInt)]
+            return[SlotSet("gegenstand", None),SlotSet("confirmed", False)]
 
         elif answertype == "affirm" and gegenstand is not None:
             print("bringt alternative")
@@ -1272,31 +1164,6 @@ class ActionMoreInfo(Action):
             return [SlotSet("info_type", "Sensoren")]
         return
 
-class ActionSetProactiveLevel(Action):
-    def name(self):
-        return "action_set_level"
-
-    def run(self, dispatcher, tracker, domain):
-
-        print("action_set_level wird gestartet")
-
-        proactive_level = tracker.latest_message['entities'][0]['value']
-        proactive_level = proactive_level.lower()
-        print(proactive_level)
-
-        if proactive_level == "kein":
-            dispatcher.utter_message("Okay, ich werde nicht autonom handeln.")
-            return[SlotSet("proactive_level", 1)]
-        elif proactive_level == "wenig":
-            dispatcher.utter_message("Okay, ich werde ein wenig autonom handeln.")
-            return[SlotSet("proactive_level", 2)]
-        elif proactive_level == "mittel":
-            dispatcher.utter_message("Okay, ich werde autonom handeln.")
-            return [SlotSet("proactive_level", 3)]
-        elif proactive_level == "hoch":
-            dispatcher.utter_message("Okay, ich werde vollständig autonom handeln.")
-            return [SlotSet("proactive_level", 4)]
-        return
 
 class ActionMemorize(Action):
     def name(self):
@@ -1316,7 +1183,7 @@ class ActionMemorize(Action):
         }
         toPublish = json.dumps(mqttJSON)  # Python object in Json convertieren
         client.publish(topicTask, toPublish)
-
+        dispatcher.utter_message("Alles klar, bis später.")
         return
 
 class ActionAssistanceNeeded(Action):
@@ -1362,9 +1229,65 @@ class ActionAssistanceNeeded(Action):
 
             dispatcher.utter_message("Ich weiß nicht wohin der Gegenstand "+gegenstand+" gehört.")
 
-            return
+        return
 
+class IncomingSuccessMessage(Action):
+    def name(self):
+        return "action_success_message"
 
+    def run(self, dispatcher, tracker, domain):
 
+        print("action_success_message wird gestartet")
+        success = tracker.get_slot("success")
 
+        if globalLastAction is not None and success is not None:
+
+            if globalLastAction == "anomaly_detected":
+                print("incoming anomaly_detected success message")
+
+            elif globalLastAction == "alternatives":
+                print("incoming alternatives success message")
+
+            elif globalLastAction == "handover_start":
+                print("incoming handover_start success message")
+                if success:
+                    dispatcher.utter_message("Das Überreichen ist abgeschlossen.")
+                else:
+                    dispatcher.utter_message("Hoppla, etwas ist falsch gelaufen. Ich kann die Aktion nicht ausführen.")
+
+            elif globalLastAction == "handover_completed":
+                print("incoming handover_completed success message")
+
+            elif globalLastAction == "bring":
+                print("incoming bring success message")
+                if success:
+                    print("lol")
+                else:
+                    dispatcher.utter_message("Hoppla, etwas ist falsch gelaufen. Ich kann die Aktion nicht ausführen.")
+            else:
+                print("incoming UNDEFINED success message")
+                if success:
+                    print("lol")
+                else:
+                    dispatcher.utter_message("Hoppla, etwas ist falsch gelaufen. Ich komme hier nicht weiter, bitte System zurücksetzen.")
+
+        return
+
+class IncomingSuccessMessage(Action):
+    def name(self):
+        return "action_greet_person"
+
+    def run(self, dispatcher, tracker, domain):
+
+        print ("action_greet_person_is_started")
+        
+        person_name = tracker.get_slot("name")
+        
+        if person_name is None:
+           person_name = ""
+           dispatcher.utter_message("Hallo. Schön dich kennenzulernen.")
+        else:
+           dispatcher.utter_message("Hallo, " + person_name + ". Schön dich kennenzulernen.")
+
+    return
 

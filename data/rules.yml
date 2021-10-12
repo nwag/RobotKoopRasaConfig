@@ -29,14 +29,22 @@ rules:
     steps:
     - intent: EXTERNAL_handover_start
     - action: utter_handover_start
+  - rule: finished handing over
+    steps:
+    - intent: EXTERNAL_handover_completed
+    - action: utter_handover_completed
   - rule: rule_bring
     steps:
     - intent: bring
     - action: action_bring
-  - rule: start clean
+  - rule: success message arrived
     steps:
-    - intent: clean
-    - action: action_clean
+    - intent: EXTERNAL_success
+    - action: action_success_message
+  #- rule: start clean
+   # steps:
+    #- intent: clean
+   # - action: action_clean
   - rule: out-of-scope
     steps:
     - intent: out_of_scope

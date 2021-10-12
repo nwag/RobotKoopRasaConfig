@@ -12,6 +12,12 @@ pipeline:
    - name: SpacyFeaturizer   
 #   - name: WhitespaceTokenizer
    - name: RegexFeaturizer #ist für look up tabels verantwortlich
+     use_lookup_tables: True
+   - name: SpacyEntityExtractor
+     dimensions: [ "PERSON" ]
+   - name: RegexEntityExtractor
+     case_sensitive: False
+     use_lookup_tables: True
    - name: LexicalSyntacticFeaturizer
    - name: CountVectorsFeaturizer
    - name: CountVectorsFeaturizer
@@ -54,7 +60,7 @@ policies:
   - name: MemoizationPolicy #remembers story from training data
     max_history: 3
   - name: TEDPolicy
-    epochs: 25
+    epochs: 20
     constrain_similarities: True
   - name: RulePolicy
     core_fallback_threshold: 0.3
