@@ -1,20 +1,17 @@
 # Configuration for Rasa NLU.
 # https://rasa.com/docs/rasa/nlu/components/
-#language: de_core_news_md
-language: de_core_news_md
+language: de
+
 pipeline:
-# # No configuration for the NLU pipeline was provided. The following default pipeline was used to train your model.
-# # If you'd like to customize it, uncomment and adjust the pipeline.
-# # See https://rasa.com/docs/rasa/tuning-your-model for more information.
-   #- name: LanguageModelFeaturizer
-   - name: SpacyNLP
-   - name: SpacyTokenizer
-   - name: SpacyFeaturizer   
-#   - name: WhitespaceTokenizer
-   - name: RegexFeaturizer #ist für look up tabels verantwortlich
+ #- name: LanguageModelFeaturizer
+   #- name: SpacyNLP
+   #- name: SpacyTokenizer
+   #- name: SpacyFeaturizer   
+   - name: WhitespaceTokenizer
+   - name: RegexFeaturizer
      use_lookup_tables: True
-   - name: SpacyEntityExtractor
-     dimensions: [ "PERSON" ]
+   #- name: SpacyEntityExtractor
+    # dimensions: [ "PERSON" ]
    - name: RegexEntityExtractor
      case_sensitive: False
      use_lookup_tables: True
@@ -25,7 +22,7 @@ pipeline:
      min_ngram: 1
      max_ngram: 4
    - name: DIETClassifier
-     epochs: 200
+     epochs: 100
    - name: EntitySynonymMapper
    - name: ResponseSelector
      epochs: 100
@@ -49,16 +46,13 @@ pipeline:
 #     threshold: 0.3
 #     ambiguity_threshold: 0.1
  #  - name: supervised_embeddings
-#ist gut. Multible intents sind nur mit der Pipline mölich
 
 # Configuration for Rasa Core.
 # https://rasa.com/docs/rasa/core/policies/
-# CountVectors... EmbeddingInten.... brauche ich nicht mehr. Das ist da zu da falls ich zwei befehle gleichzeitig bekomme und erkennen muss z.B. Hallo hol mir einen Apfel [greed]+[bring]. Das habe ich aber momentan noch nicht. Ich lasse es trotzdem mal drin
-#  - name: "FormPolicy" ich benutze die garnicht und mach bei upgrade zu 2.0 fehler
 
 policies:
   - name: MemoizationPolicy #remembers story from training data
-    max_history: 3
+    max_history: 5
   - name: TEDPolicy
     epochs: 20
     constrain_similarities: True

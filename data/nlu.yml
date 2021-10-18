@@ -9,7 +9,8 @@ nlu:
     - Ich bin die [Anna](PERSON)
     - Ich bin [Ankita](PERSON)
     - Mein Name lautet [Arthur](PERSON)
-    - Hallo, ich heiße [Hans](PERSON).
+    - Hallo, ich heiße [Hans](PERSON)
+    - hallo man nennt mich [Petra](PERSON)
     - [Nicolas](PERSON)
 - intent: appConnect
   examples: |
@@ -94,54 +95,42 @@ nlu:
 - intent: affirm
   examples: |
     - ja
-    - jap
-    - ich will
+    - ich möchte
     - ich will das
     - genau das
     - gerne
     - oh ja
-    - passt
     - bitte
     - unbedingt
     - ok
+    - ja bitte
+    - ja, bitte
+    - ja, gerne
+    - sehr gern
+    - okay
+    - in Ordnung
+    - logisch
+    - ja, kannst du machen
+    - aye aye
 - intent: deny
   examples: |
     - Nein
     - Nee
     - nicht
     - negativ
-    - Auf keinen fall
-    - Was laberst du
-    - Ich mache das selbst.
-    - Ich will nicht.
-    - Mach das nicht.
-- intent: answer_anom_alt
-  examples: |
-    - Okay kannst du das bitte [aufräumen](answer)?
-    - Hey da ist Müll [kannst](answer) du das aufräumen?
-    - Okay kannst du mir bitte eine Fanta [holen](answer)?
-    - Okay kannst du mir dann eine Apfelschorle [holen](answer)
-    - Kannst du mir dann bitte etwas anderes [bringen](answer)
-    - [nichts](answer) machen
-    - Okay [kannst](answer) du mir eine Fanta holen
-    - okay [kannst](answer) du mir eine Fanta holen?
-    - okay [kannst](answer) du mir eine Fanta bringen
-    - okay kannst du mir eine Fanta [holen](answer)
-    - okay kannst du mir eine Fanta [bringen](answer)
-    - okay Kurt die Zeitung brauche ich nicht mehr kannst du das [aufräumen](answer)
-    - okay, kannst du das bitte [aufräumen](answer)
-    - Okay kannst du mir eine Fanta [holen](answer)
-    - hey da ist müll kannst du das [aufräumen](answer)
-    - okay [kannst](answer) du mir eine fanta bringen
-    - hey kurt [kannst](answer) du mir dann bitte etwas anderes bringen
-    - okay kannst du mir eine fanta [bringen](answer)
-    - okay kannst du mir bitte eine Fanta [holen](answer)
+    - Auf keinen Fall
+    - Ich mache das selbst
+    - Ich will nicht
+    - Mach das nicht
+    - nein, das muss nicht sein
+    - brauchst du nicht
+    - nein, danke.
 - intent: more_info
   examples: |
     - Erzähl mir etwas über deinen [Greifarm](info_type)
-    - Erzähl was über [Greifarm](info_type)
+    - Erzähle was über [Greifarm](info_type)
     - Erzähl was über [Sensor](info_type)
-    - Kannst du was über [Greifer](info_type)
+    - Kannst du was über den [Greifarm](info_type)
     - Ich möchte mehr über deine [Sensoren](info_type) wissen.
     - Ich möchte etwas über deinen [Greifarm](info_type) erfahren.
     - Sag mir mehr zu deinen [Sensoren](info_type).
@@ -164,6 +153,8 @@ nlu:
     - j
     - yes
     - jawohl
+    - jau
+    - jap
 - synonym: Chips
   examples: |
     - Chipstüte
@@ -177,6 +168,18 @@ nlu:
     - nada
     - nein
     - nicht
+    - nein danke
+    - nee, danke.
+- synonym: Greifarm
+  examples: |
+    - thai farm
+    - greif an
+    - greifern
+    - greifer
+    - hai fang
+    - kreis fahren
+    - 3 farben
+    - greifarme
 - lookup: gegenstand
   examples: |
     - Chips
@@ -1340,7 +1343,6 @@ nlu:
     - Gust
     - Keanu
     - Kilian
-    - Miro
     - Mouhamed
     - Nasir
     - Noa
@@ -1410,8 +1412,6 @@ nlu:
     - Manfred
     - Marvin
     - Mattis
-    - Mirsad
-    - Mirza
     - Prosper
     - Reza
     - Rida
@@ -1557,7 +1557,6 @@ nlu:
     - Lorenz
     - Maximiliaan
     - Milad
-    - Miran
     - Noam
     - Noor
     - Ozan
@@ -1599,7 +1598,6 @@ nlu:
     - Levy
     - Lokman
     - Luigi
-    - Miraç
     - Remzi
     - Roan
     - Shane
@@ -1861,7 +1859,6 @@ nlu:
     - Mason
     - Mehran
     - Mikhail
-    - Mirko
     - Murad
     - Noureddin
     - Nurettin
@@ -1939,7 +1936,6 @@ nlu:
     - Lucian
     - Marzouk
     - Matz
-    - Mir
     - Mohsin
     - Moncef
     - Muhamet
@@ -2018,7 +2014,6 @@ nlu:
     - Merlijn
     - Michele
     - Mihail
-    - Mircea
     - Monir
     - Nadeem
     - Nasreddine
@@ -2209,8 +2204,6 @@ nlu:
     - Marnik
     - Matei
     - Mete
-    - Mirac
-    - Mirwais
     - Mitchell
     - Nazim
     - Naïm
@@ -3111,7 +3104,6 @@ nlu:
     - Azem
     - Bahram
     - Basiel
-    - Binyamin
     - Birol
     - Boy
     - Byulent
@@ -3737,7 +3729,6 @@ nlu:
     - Bhavesh
     - Biagio
     - Bibek
-    - Biniam
     - Bouarfa
     - Bouchta
     - Brahem
@@ -4175,8 +4166,6 @@ nlu:
     - Beysim
     - Bilel
     - Bilyan
-    - Bin
-    - Binyam
     - Blessing
     - Bobby
     - Boualam
@@ -4347,8 +4336,6 @@ nlu:
     - Milorad
     - Milot
     - Miquel
-    - Miracle
-    - Mirco
     - Mobin
     - Mohamadou
     - Mohamed-Ali
@@ -4744,7 +4731,6 @@ nlu:
     - Batsheva
     - Bela
     - Berna
-    - Bina
     - Boutaina
     - Chama
     - Chams
@@ -5782,7 +5768,6 @@ nlu:
     - Merveille
     - Micha
     - Mihriban
-    - Mirna
     - Mitte
     - Miyase
     - Morena
@@ -6098,7 +6083,6 @@ nlu:
     - Milka
     - Mimoza
     - Mindel
-    - Miral
     - Miroslawa
     - Montserrat
     - Moumna
@@ -6492,8 +6476,6 @@ nlu:
     - Mildred
     - Mindi
     - Minerva
-    - Mirre
-    - Mit
     - Monira
     - Moran
     - Morsal
@@ -6782,7 +6764,6 @@ nlu:
     - Beverly
     - Beya
     - Beyzanur
-    - Bintu
     - Birgül
     - Bita
     - Blerta
@@ -7082,7 +7063,6 @@ nlu:
     - Millicent
     - Minka
     - Mioara
-    - Mirel
     - Miryem
     - Mitra
     - Mojgan

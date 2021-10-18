@@ -36,6 +36,8 @@ intents:
 - EXTERNAL_handover_completed
 - EXTERNAL_success
 - EXTERNAL_assistance
+- EXTERNAL_found_objects
+- EXTERNAL_object_recognition
 entities:
 - alternatives
 - alternative_place1
@@ -45,8 +47,8 @@ entities:
 - gegenstand
 - handover_start
 - handover_completed
+- found_objects
 - info_type
-#- keyword
 - missing_from
 - missing_info
 - missing_object
@@ -121,8 +123,12 @@ slots:
     max_value: 4
     min_value: 1
   info_type:
-    type: text
+    type: categorical
+    initial_value: Greifarm
     influence_conversation: true
+    values:
+      - Greifarm
+      - Sensoren
   alternative_place1:
     type: text
     influence_conversation: false
@@ -132,25 +138,23 @@ slots:
     
 responses:
   utter_answ_greet:
-  - text: Ich werde dir zukünftig etwas im Haushalt helfen. Ich würde mich dir gerne kurz vorstellen. Falls du einen Moment Zeit hast, kannst du dich über meinen Greifarm oder meine Sensoren informieren. Sag dazu beispielsweise erzähle mir etwas über deinen Greifarm.
+  - text: Ich werde dir zukünftig etwas im Haushalt helfen. Ich würde mich dir gerne kurz vorstellen. Falls du einen Moment Zeit hast, kannst du dich über meinen Greifarm oder meine Sensoren informieren. Sag dazu beispielsweise "erzähle mir etwas über den Greifarm".
   utter_arm:
-  - text: Fünf Gelenke erlauben mir meinen Arm in verschiedene Richtungen zu bewegen. Zwei Finger, die mit Kraftsensoren ausgestattet sind, erlauben es mir hierbei Gegenstände mit bis zu 3 kg sicher zu greifen.
+  - text: Fünf Gelenke erlauben mir meinen Arm in verschiedene Richtungen zu bewegen. Zwei Finger, die mit Kraftsensoren ausgestattet sind, erlauben es mir hierbei Gegenstände mit bis zu 3 Kilogramm sicher zu greifen.
   utter_sensors:
   - text: In meinem Kopf befinden sich verschiedene Sensoren und eine Kamera, mit denen ich mein Umfeld, Abstände, Personen und Objekte erkennen kann. Mit meinen Lautsprechern und Mikrofonen kann ich mit dir kommunizieren. Zusätzlich verfüge ich über einen Laserscanner und Ultraschallsensoren um Kollisionen zu vermeiden.
   utter_more_info:
   - text: Möchtest du sonst noch etwas wissen?
   utter_request_memorize:
-  - text: Um dir besser helfen zu können würde ich mich gerne ein bisschen in deiner Wohnung umsehen. Das wird eine Weile dauern, ist das in Ordnung? Wir bleiben währenddessen jederzeit über dein Tablet verbunden.
+  - text: Um dir besser helfen zu können würde ich mich gerne ein bisschen in deiner Wohnung umsehen. Das wird kurz dauern, ist das in Ordnung?
   utter_memorize:
   - text: Ich sehe mich um.
   utter_handover_start:
-  - text: Ich möchte dir gerne einen Gegenstand überreichen. Du brauchst keine Angst haben, mein Greifarm wird nun in deine Richtung ausgestreckt.
+  - text: Ich möchte dir gerne die Chips überreichen. Mein Greifarm wird dazu in deine Richtung ausgestreckt.
   utter_handover_completed:
   - text: Super, vielen Dank für deine Mithilfe. 
   utter_appConnect:
   - text: Der Verbindungsaufbau war erfolgreich.
-  utter_name:
-  - text: Hallo, sag mir bitte deinen Namen.
   utter_greet:
   - text: Hallo, ich bin der Haushaltsroboter Kurt und wer bist du?
   utter_bring:
@@ -174,7 +178,7 @@ responses:
   utter_not_found:
   - text: Ich habe keinen Gegenstand {gegenstand} in deiner Wohnung gesehen.
   utter_please_rephrase:
-  - text: Ich habe das nicht verstanden. Bitte Eingabe wiederholen.
+  - text: Ich habe das nicht verstanden. Kannst du ein wenig konkreter antworten?
   utter_command_lfd:
   - text: Okay, bitte sag mir Bescheid wenn es los geht.
   utter_start_lfd:
@@ -197,6 +201,8 @@ responses:
   - text: 'Wie autonom soll ich handeln? Du kannst zwischen vier Varianten entscheiden: Nicht autonom, dann werde ich nur auf Zuruf handeln. Wenig autonom bedeutet, dass ich dich hinweisen werde wenn ich dich unterstützen könnte. Im Modus mittelautonom werde ich dir aktiv Hilfe anbieten, während ich in der Einstellung hochautonom selbstständig Aufgaben ausführen werde.'
   utter_out_of_scope:
   - text: Entschuldigung, ich kann diese Anfrage nicht bearbeiten.
+  utter_humor_deny:
+  - text: Das ist aber schade. Zum Fortfahren der Studie musst du aber einwilligen.
  # utter_ack_shopping:
   #- text: Alles klar, {name}. Wenn du wieder kommst kann ich dir direkt helfen, die Einkäufe einzusortieren. Bis später!
 actions:
@@ -220,6 +226,8 @@ actions:
 - action_more_info
 - action_offer_alternative
 - action_offer_clean
+- action_found_objects
+- action_object_recognition
 #- action_reproduce_lfd
 #- action_save_lfd
 - action_set_level
@@ -254,3 +262,4 @@ actions:
 - utter_take
 - utter_where
 - utter_answ_greet
+- utter_humor_deny

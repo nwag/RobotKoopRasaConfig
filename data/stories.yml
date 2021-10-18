@@ -1,38 +1,13 @@
 version: "2.0"
 stories:
-- story: missing_object_story
-  steps:
-  - intent: EXTERNAL_missing_from
-  - action: action_ask_for_info
-  - intent: bring
-  - action: action_bring
-
-- story: offer alternative
-  steps:
-  - intent: EXTERNAL_alternative
-  - action: action_offer_alternative
-  - checkpoint: ask_confirmation
-
-- story: confirm alternative
-  steps:
-  - checkpoint: ask_confirmation
-  - intent: affirm
-  - action: action_alternative_react
-
-- story: deny alternative
-  steps:
-  - checkpoint: ask_confirmation
-  - intent: deny
-  - action: action_alternative_react
-  
 - story: start interaction
   steps:
   - intent: EXTERNAL_person_detected
-  - slot_was_set:
-    - shopping: zuhause
   - action: utter_greet
   - intent: greet
   - action: action_greet_person
+  - slot_was_set:
+    - PERSON: name
   - action: utter_answ_greet
   - intent: more_info
   - slot_was_set:
@@ -40,26 +15,25 @@ stories:
   - action: action_more_info
   - checkpoint: info_confirmation
 
-- story: start interaction 2
+- story: offer alternative
   steps:
-  - intent: EXTERNAL_person_detected
+  - action: bring
+  - intent: EXTERNAL_alternative
+  - action: action_offer_alternative
   - slot_was_set:
-      - shopping: zuhause
-  - action: utter_greet
-  - intent: greet
-  - action: action_greet_person
-  - action: utter_answ_greet
+      - gegenstand: Kekse
+  - intent: affirm
+  - action: action_alternative_react
 
-- story: start introduction
+- story: deny alternative
   steps:
-  - intent: greet
-  - action: action_greet_person
-  - action: utter_answ_greet
-  - intent: more_info
+  - action: bring
+  - intent: EXTERNAL_alternative
+  - action: action_offer_alternative
   - slot_was_set:
-      - info_type: Sensoren
-  - action: action_more_info
-  - checkpoint: info_confirmation
+      - gegenstand: Kekse
+  - intent: deny
+  - action: action_alternative_react
 
 - story: affirm info
   steps:
@@ -67,13 +41,13 @@ stories:
   - intent: affirm
   - action: action_more_info
   - action: utter_request_memorize
-  - action: action_memorize
   - intent: affirm
+  - action: action_memorize
   - intent: EXTERNAL_anomaly_detected
   - slot_was_set:
       - anomaly: bleiche
   - action: action_anomaly_detected
-  - intent: moveto
+  - intent: affirm
   - action: action_anomaly_react
 
 - story: deny info
@@ -90,6 +64,18 @@ stories:
   - intent: deny
   - action: action_anomaly_react
 
+- story: memorize negative
+  steps:
+  - checkpoint: info_confirmation
+  - intent: deny
+  - action: utter_request_memorize
+  - intent: deny
+  - action: utter_humor_deny
+  - action: utter_request_memorize
+  - intent: deny
+  - action: utter_humor_deny
+  - action: utter_request_memorize
+
 - story: anomaly detected
   steps:
   - intent: EXTERNAL_anomaly_detected
@@ -98,15 +84,6 @@ stories:
   - action: action_anomaly_detected
   - intent: affirm
   - action: action_anomaly_react
-
-- story: anomaly putzmittel
-  steps:
-  - intent: EXTERNAL_anomaly_detected
-  - slot_was_set:
-    - anomaly: Putzmittel
-  - action: action_anomaly_detected
-  - intent: moveto
-  - action: action_anomaly_react      
 
 - story: anomaly detected deny
   steps:

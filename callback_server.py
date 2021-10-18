@@ -16,7 +16,7 @@ def create_app() -> Sanic:
 
             bot_response = request.json.get("text")
             print(f"\n{bot_response}")
-            time.sleep(2)
+            time.sleep(1)
             bot_app.inventory = {"text": bot_response, "timestamp": int(time.time())}
             body = {"status": "message sent"}
             return response.json(body, status=200)
@@ -26,7 +26,7 @@ def create_app() -> Sanic:
     @bot_app.get("/bot")
     async def print_get(request: Request) -> HTTPResponse:
         """Print bot response to the console."""
-        await asyncio.sleep(2)
+        await asyncio.sleep(0.5)
         bot_answer = bot_app.inventory
         #body = {"text": f"{bot_answer}"}
         body = bot_answer

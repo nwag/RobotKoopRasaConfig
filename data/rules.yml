@@ -16,10 +16,6 @@ rules:
     steps:
     - intent: appConnect
     - action: utter_appConnect
-  - rule: external tts
-    steps:
-      - intent: EXTERNAL_tts
-      - action: utter_tts
   - rule: memorizes the flat
     steps:
     - intent: memorize
@@ -33,6 +29,14 @@ rules:
     steps:
     - intent: EXTERNAL_handover_completed
     - action: utter_handover_completed
+  - rule: found an object
+    steps:
+    - intent: EXTERNAL_found_objects
+    - action: action_found_objects
+  - rule: object recognition still running
+    steps:
+    - intent: EXTERNAL_object_recognition
+    - action: action_object_recognition
   - rule: rule_bring
     steps:
     - intent: bring
