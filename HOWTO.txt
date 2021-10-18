@@ -1,0 +1,14 @@
+1. virtuelle rasa umgebung in anaconda prompt (admin) 3 mal starten, anschließend Verzeichnis wechseln
+
+.\rasaenv\Scripts\activate
+
+cd \Users\RobotKoop\Desktop\STUDIENBOT
+
+2. rasa server starten: 
+rasa run -m models --enable-api --cors '*'
+
+3. rasa action server starten:
+rasa run actions
+
+4. callback server starten:
+python callback_server.py
